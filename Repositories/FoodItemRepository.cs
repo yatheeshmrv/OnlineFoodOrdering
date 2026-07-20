@@ -1,82 +1,100 @@
-﻿using FoodOrderAPI.Models;
+﻿using FoodOrderAPI.Data;
+using FoodOrderAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrderAPI.Repositories
 {
     public class FoodItemRepository : IFoodItemRepository
     {
-        private static readonly List<FoodItem> foodItems = new List<FoodItem>
-        {
-            new FoodItem
-            {
-                Id = 1,
-                Name = "Chicken Biryani",
-                Description = "Spicy chicken biryani",
-                Price = 180,
-                Category = "Main Course",
-                IsAvailable = true
-            },
-            new FoodItem
-            {
-                Id = 2,
-                Name = "Veg Fried Rice",
-                Description = "Fried rice with vegetables",
-                Price = 120,
-                Category = "Main Course",
-                IsAvailable = true
-            }
-        };
+        // ApplicationDbContext is used to communicate with SQL Server database
+        private readonly ApplicationDbContext _context;
 
-        public async Task<IEnumerable<FoodItem>> GetAllFoodItemsAsync()
+        // Constructor Injection
+        // ASP.NET Core provides ApplicationDbContext object automatically
+        public FoodItemRepository(ApplicationDbContext context)
         {
-            return await Task.FromResult(foodItems);
+            _context = context;
         }
 
+        // This method gets all food items from database
+        // Include is used to load related FoodCategory data also
+        public async Task<List<FoodItem>> GetAllFoodItemsAsync()
+        {
+            return await _context.FoodItems
+                .Include(foodItem => foodItem.FoodCategory)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        // This method gets one food item based on Id
+        // Include loads category details with the food item
         public async Task<FoodItem?> GetFoodItemByIdAsync(int id)
         {
-            var foodItem = foodItems.FirstOrDefault(x => x.Id == id);
-
-            return await Task.FromResult(foodItem);
+            return await _context.FoodItems
+                .Include(foodItem => foodItem.FoodCategory)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(foodItem => foodItem.Id == id);
         }
 
-        public async Task<FoodItem> CreateFoodItemAsync(FoodItem foodItem)
+        // This method adds a new food item into the database
+        public async Task<FoodItem> AddFoodItemAsync(FoodItem foodItem)
         {
-            foodItem.Id = foodItems.Count == 0 ? 1 : foodItems.Max(x => x.Id) + 1;
+            // AddAsync prepares INSERT operation
+            await _context.FoodItems.AddAsync(foodItem);
 
-            foodItems.Add(foodItem);
+            // SaveChangesAsync actually saves the new row into SQL Server
+            await _context.SaveChangesAsync();
 
-            return await Task.FromResult(foodItem);
+            // Return newly added food item with generated Id
+            return foodItem;
         }
 
         public async Task<FoodItem?> UpdateFoodItemAsync(int id, FoodItem foodItem)
         {
-            var existingFoodItem = foodItems.FirstOrDefault(x => x.Id == id);
+            // First, find the existing food item from database using route id
+            var existingFoodItem = await _context.FoodItems.FindAsync(id);
 
+            // If food item is not found, return null
             if (existingFoodItem == null)
             {
                 return null;
             }
 
+            // Update existing food item values with new values from request body
             existingFoodItem.Name = foodItem.Name;
             existingFoodItem.Description = foodItem.Description;
             existingFoodItem.Price = foodItem.Price;
-            existingFoodItem.Category = foodItem.Category;
+            existingFoodItem.FoodCategoryId = foodItem.FoodCategoryId;
             existingFoodItem.IsAvailable = foodItem.IsAvailable;
 
-            return await Task.FromResult(existingFoodItem);
+            // Save updated values into database
+            await _context.SaveChangesAsync();
+
+            // Return updated food item
+            return existingFoodItem;
         }
 
+        // This method deletes an existing food item based on Id
         public async Task<bool> DeleteFoodItemAsync(int id)
         {
-            var existingFoodItem = foodItems.FirstOrDefault(x => x.Id == id);
+            // First, find the existing food item from database
+            var existingFoodItem = await _context.FoodItems
+                .FirstOrDefaultAsync(item => item.Id == id);
 
+            // If food item is not found, return false
             if (existingFoodItem == null)
             {
-                return await Task.FromResult(false);
+                return false;
             }
 
-            foodItems.Remove(existingFoodItem);
+            // Remove prepares DELETE operation
+            _context.FoodItems.Remove(existingFoodItem);
 
-            return await Task.FromResult(true);
+            // SaveChangesAsync sends DELETE command to SQL Server
+            await _context.SaveChangesAsync();
+
+            // Return true because delete was successful
+            return true;
         }
     }
 }

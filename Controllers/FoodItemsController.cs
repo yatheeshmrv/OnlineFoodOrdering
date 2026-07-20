@@ -1,37 +1,38 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FoodOrderAPI.DTOs;
 using FoodOrderAPI.Services;
-using FoodOrderAPI.DTOs;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FoodOrderAPI.Controllers
 {
+    // This tells ASP.NET Core that this class is an API Controller
     [ApiController]
+
+    // API URL will be: api/FoodItems
     [Route("api/[controller]")]
     public class FoodItemsController : ControllerBase
     {
-        // CHANGE 1:
-        // Earlier, foodItems list was inside controller.
-        // Now, all food item logic is moved to FoodItemService.
-        private readonly IFoodItemService _foodItemService; // Dependency Injection using constructor injection
+        // Service object is used to call business logic
+        private readonly IFoodItemService _foodItemService;
 
+        // Constructor Injection
+        // ASP.NET Core automatically provides FoodItemService object
         public FoodItemsController(IFoodItemService foodItemService)
         {
             _foodItemService = foodItemService;
         }
+
         // GET: api/FoodItems
-        // CHANGE 2:
-        // Earlier, controller directly returned foodItems list.
-        // Now, controller asks service to get all food items.
+        // This API returns all food items
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<FoodItemDto>>> GetAllFoodItems()
+        public async Task<ActionResult<List<FoodItemDto>>> GetAllFoodItems()
         {
             var foodItems = await _foodItemService.GetAllFoodItemsAsync();
 
             return Ok(foodItems);
         }
+
         // GET: api/FoodItems/1
-        // CHANGE 3:
-        // Earlier, searching by id was done inside controller.
-        // Now, service searches the food item by id.
+        // This API returns one food item by Id
         [HttpGet("{id}")]
         public async Task<ActionResult<FoodItemDto>> GetFoodItemById(int id)
         {
@@ -39,64 +40,68 @@ namespace FoodOrderAPI.Controllers
 
             if (foodItem == null)
             {
-                return NotFound();
+                return NotFound("Food item not found.");
             }
 
             return Ok(foodItem);
         }
 
         // POST: api/FoodItems
-        // CHANGE 4:
-        // Earlier, validation and adding food item were inside controller.
-        // Now, service validates and adds the food item.
+        // This API adds a new food item
         [HttpPost]
-        public async Task<ActionResult<FoodItemDto>> CreateFoodItem(CreateFoodItemDto createFoodItemDto)
+        public async Task<ActionResult<FoodItemDto>> AddFoodItem(FoodItemDto foodItemDto)
         {
-            var createdFoodItem = await _foodItemService.CreateFoodItemAsync(createFoodItemDto);
+            try
+            {
+                var addedFoodItem = await _foodItemService.AddFoodItemAsync(foodItemDto);
 
-            return CreatedAtAction(
-                nameof(GetFoodItemById),
-                new { id = createdFoodItem.Id },
-                createdFoodItem
-            );
+                return CreatedAtAction(
+                    nameof(GetFoodItemById),
+                    new { id = addedFoodItem.Id },
+                    addedFoodItem
+                );
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // PUT: api/FoodItems/1
-        // CHANGE 5:
-        // Earlier, update logic was inside controller.
-        // Now, service handles update logic.
-        // PUT: api/FoodItems/1
+        // This API updates an existing food item
         [HttpPut("{id}")]
-        public async Task<ActionResult<FoodItemDto>> UpdateFoodItem(
-            int id,
-            UpdateFoodItemDto updateFoodItemDto)
+        public async Task<ActionResult<FoodItemDto>> UpdateFoodItem(int id, FoodItemDto foodItemDto)
         {
-            var updatedFoodItem = await _foodItemService.UpdateFoodItemAsync(id, updateFoodItemDto);
-
-            if (updatedFoodItem == null)
+            try
             {
-                return NotFound("Food item not found");
-            }
+                var updatedFoodItem = await _foodItemService.UpdateFoodItemAsync(id, foodItemDto);
 
-            return Ok(updatedFoodItem);
+                if (updatedFoodItem == null)
+                {
+                    return NotFound("Food item not found.");
+                }
+
+                return Ok(updatedFoodItem);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // DELETE: api/FoodItems/1
-        // CHANGE 6:
-        // Earlier, delete logic was inside controller.
-        // Now, service handles delete logic.
-        // DELETE: api/FoodItems/1
+        // This API deletes an existing food item
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteFoodItem(int id)
+        public async Task<ActionResult> DeleteFoodItem(int id)
         {
-            var result = await _foodItemService.DeleteFoodItemAsync(id);
+            var isDeleted = await _foodItemService.DeleteFoodItemAsync(id);
 
-            if (result == false)
+            if (!isDeleted)
             {
-                return NotFound("Food item not found");
+                return NotFound("Food item not found.");
             }
 
-            return Ok("Food item deleted successfully");
+            return NoContent();
         }
     }
 }

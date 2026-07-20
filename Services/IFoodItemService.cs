@@ -4,14 +4,19 @@ namespace FoodOrderAPI.Services
 {
     public interface IFoodItemService
     {
-        Task<IEnumerable<FoodItemDto>> GetAllFoodItemsAsync();
+        // Gets all food items
+        Task<List<FoodItemDto>> GetAllFoodItemsAsync();
 
+        // Gets one food item by Id
         Task<FoodItemDto?> GetFoodItemByIdAsync(int id);
 
-        Task<FoodItemDto> CreateFoodItemAsync(CreateFoodItemDto createFoodItemDto);
+        // Adds a new food item
+        Task<FoodItemDto> AddFoodItemAsync(FoodItemDto foodItemDto);
 
-        Task<FoodItemDto?> UpdateFoodItemAsync(int id, UpdateFoodItemDto updateFoodItemDto);
+        // Updates an existing food item
+        Task<FoodItemDto?> UpdateFoodItemAsync(int id, FoodItemDto foodItemDto);
 
+        // Deletes an existing food item
         Task<bool> DeleteFoodItemAsync(int id);
     }
 }

@@ -1,5 +1,8 @@
+using FoodOrderAPI.Data;
+using Microsoft.EntityFrameworkCore;
 using FoodOrderAPI.Repositories;
 using FoodOrderAPI.Services;
+
 namespace OnlineFoodOrdering
 {
     public class Program
@@ -22,6 +25,12 @@ namespace OnlineFoodOrdering
             builder.Services.AddScoped<IOrderService, OrderService>();
 
             builder.Services.AddOpenApi();
+
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); //Registering Dbcontext in program.cs
+
+            builder.Services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
+            builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
 
             var app = builder.Build();
 
