@@ -10,7 +10,9 @@ namespace FoodOrderAPI.Repositories
 
         Task<Order> CreateOrderAsync(Order order);
 
-        Task<Order?> UpdateOrderStatusAsync(int id, string orderStatus);
+        Task<Order?> UpdateOrderStatusAsync(
+            int id,
+            string orderStatus);
 
         Task<bool> DeleteOrderAsync(int id);
     }

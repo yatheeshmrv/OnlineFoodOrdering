@@ -42,7 +42,9 @@ namespace FoodOrderAPI.Repositories
         }
 
         // This method updates an existing food category.
-        public async Task<FoodCategory?> UpdateFoodCategoryAsync(int id, FoodCategory foodCategory)
+        public async Task<FoodCategory?> UpdateFoodCategoryAsync(
+            int id,
+            FoodCategory foodCategory)
         {
             FoodCategory? existingCategory = await _context.FoodCategories
                 .FirstOrDefaultAsync(category => category.Id == id);
@@ -52,8 +54,8 @@ namespace FoodOrderAPI.Repositories
                 return null;
             }
 
-            // Update category name.
-            existingCategory.CategoryName = foodCategory.CategoryName;
+            existingCategory.CategoryName = foodCategory.CategoryName.Trim();
+            existingCategory.IsActive = foodCategory.IsActive;
 
             await _context.SaveChangesAsync();
 

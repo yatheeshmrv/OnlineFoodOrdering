@@ -2,6 +2,7 @@ using FoodOrderAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using FoodOrderAPI.Repositories;
 using FoodOrderAPI.Services;
+using FoodOrderAPI.ExceptionHandlers;
 
 namespace OnlineFoodOrdering
 {
@@ -32,7 +33,12 @@ namespace OnlineFoodOrdering
             builder.Services.AddScoped<IFoodCategoryRepository, FoodCategoryRepository>();
             builder.Services.AddScoped<IFoodCategoryService, FoodCategoryService>();
 
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
+
             var app = builder.Build();
+
+            app.UseExceptionHandler();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

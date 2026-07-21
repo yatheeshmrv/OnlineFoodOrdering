@@ -24,8 +24,8 @@ namespace FoodOrderAPI.DTOs
         // So this pattern means:
         // orderStatus must be exactly Pending OR Confirmed OR Cancelled OR Delivered
         [RegularExpression(
-            "^(Pending|Confirmed|Cancelled|Delivered)$",
-            ErrorMessage = "Order status must be Pending, Confirmed, Cancelled, or Delivered"
+            "^(Pending|Confirmed|Preparing|Out for Delivery|Cancelled|Delivered)$",
+            ErrorMessage = "Order status must be Pending, Confirmed,Preparing, Cancelled,Out for Delivery or Delivered"
         )]
         public string OrderStatus { get; set; } = string.Empty;
     }

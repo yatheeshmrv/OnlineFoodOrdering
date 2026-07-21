@@ -1,58 +1,86 @@
-﻿using FoodOrderAPI.Models;
+﻿using FoodOrderAPI.Data;
+using FoodOrderAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrderAPI.Repositories
 {
     public class OrderRepository : IOrderRepository
     {
-        private static readonly List<Order> orders = new List<Order>();
+        private readonly ApplicationDbContext _context;
+
+        public OrderRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public async Task<IEnumerable<Order>> GetAllOrdersAsync()
         {
-            return await Task.FromResult(orders);
+            return await _context.Orders
+                .Include(order => order.OrderItems)
+                .ThenInclude(orderItem => orderItem.FoodItem)
+                .AsNoTracking()
+                .OrderByDescending(order => order.OrderDate)
+                .ToListAsync();
         }
 
         public async Task<Order?> GetOrderByIdAsync(int id)
         {
-            var order = orders.FirstOrDefault(x => x.Id == id);
-
-            return await Task.FromResult(order);
+            return await _context.Orders
+                .Include(order => order.OrderItems)
+                .ThenInclude(orderItem => orderItem.FoodItem)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(order => order.Id == id);
         }
 
         public async Task<Order> CreateOrderAsync(Order order)
         {
-            order.Id = orders.Count == 0 ? 1 : orders.Max(x => x.Id) + 1;
+            foreach (var orderItem in order.OrderItems)
+            {
+                // FoodItemId is sufficient. The existing FoodItem entity
+                // should not be inserted again.
+                orderItem.FoodItem = null;
+            }
 
-            orders.Add(order);
+            await _context.Orders.AddAsync(order);
+            await _context.SaveChangesAsync();
 
-            return await Task.FromResult(order);
+            return order;
         }
 
-        public async Task<Order?> UpdateOrderStatusAsync(int id, string orderStatus)
+        public async Task<Order?> UpdateOrderStatusAsync(
+            int id,
+            string orderStatus)
         {
-            var existingOrder = orders.FirstOrDefault(x => x.Id == id);
+            var order = await _context.Orders
+                .Include(order => order.OrderItems)
+                .ThenInclude(orderItem => orderItem.FoodItem)
+                .FirstOrDefaultAsync(order => order.Id == id);
 
-            if (existingOrder == null)
+            if (order == null)
             {
                 return null;
             }
 
-            existingOrder.OrderStatus = orderStatus;
+            order.OrderStatus = orderStatus;
 
-            return await Task.FromResult(existingOrder);
+            await _context.SaveChangesAsync();
+
+            return order;
         }
 
         public async Task<bool> DeleteOrderAsync(int id)
         {
-            var existingOrder = orders.FirstOrDefault(x => x.Id == id);
+            var order = await _context.Orders.FindAsync(id);
 
-            if (existingOrder == null)
+            if (order == null)
             {
-                return await Task.FromResult(false);
+                return false;
             }
 
-            orders.Remove(existingOrder);
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
 
-            return await Task.FromResult(true);
+            return true;
         }
     }
 }

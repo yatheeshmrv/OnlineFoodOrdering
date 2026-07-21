@@ -8,14 +8,13 @@
 
         public string CustomerPhone { get; set; } = string.Empty;
 
-        public int FoodItemId { get; set; }
-
-        public int Quantity { get; set; }
-
         public decimal TotalAmount { get; set; }
 
         public string OrderStatus { get; set; } = string.Empty;
 
         public DateTime OrderDate { get; set; }
+
+        // List of all items in this order
+        public List<OrderItemDto> Items { get; set; } = new();
     }
 }

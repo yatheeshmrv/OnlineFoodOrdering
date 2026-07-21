@@ -1,22 +1,20 @@
-﻿using FoodOrderAPI.Models;
+﻿using FoodOrderAPI.DTOs;
 
 namespace FoodOrderAPI.Services
 {
     public interface IOrderService
     {
-        // Returns all orders as List<Order>.
-        Task<List<Order>> GetAllOrdersAsync();
+        Task<List<OrderDto>> GetAllOrdersAsync();
 
-        // Returns one order by id.
-        Task<Order?> GetOrderByIdAsync(int id);
+        Task<OrderDto?> GetOrderByIdAsync(int id);
 
-        // Creates a new order.
-        Task<Order> CreateOrderAsync(Order order);
+        Task<CreateOrderResponseDto> CreateOrderAsync(
+            CreateOrderDto createOrderDto);
 
-        // Updates order status.
-        Task<Order?> UpdateOrderStatusAsync(int id, string orderStatus);
+        Task<OrderDto?> UpdateOrderStatusAsync(
+            int id,
+            UpdateOrderStatusDto statusDto);
 
-        // Deletes order by id.
         Task<bool> DeleteOrderAsync(int id);
     }
 }

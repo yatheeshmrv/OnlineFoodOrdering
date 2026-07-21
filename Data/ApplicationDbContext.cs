@@ -15,14 +15,6 @@ namespace FoodOrderAPI.Data
 
         }
 
-        override protected void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            // This is where we can configure the database provider and connection string.
-            // For example, we can use SQL Server with a connection string.
-            // Uncomment the line below to use SQL Server with a local database.
-             optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=FoodOrderDB;Trusted_Connection=True;");
-        }
-
         // DbSet represents the FoodCategories table in the database.
         public DbSet<FoodCategory> FoodCategories { get; set; }
 
@@ -59,6 +51,12 @@ namespace FoodOrderAPI.Data
                 .HasForeignKey(orderItem => orderItem.FoodItemId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<FoodItem>()
+                .HasOne(foodItem => foodItem.FoodCategory)
+                .WithMany()
+                .HasForeignKey(foodItem => foodItem.FoodCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // UnitPrice column should store decimal values safely.
             // Example: 199.99
             modelBuilder.Entity<OrderItem>()
@@ -70,6 +68,51 @@ namespace FoodOrderAPI.Data
             modelBuilder.Entity<Order>()
                 .Property(order => order.TotalAmount)
                 .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<FoodItem>()
+    .Property(foodItem => foodItem.Price)
+    .HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<FoodCategory>().HasData(
+    new FoodCategory
+    {
+        Id = 1,
+        CategoryName = "Pizza",
+        IsActive = true
+    },
+    new FoodCategory
+    {
+        Id = 2,
+        CategoryName = "Burger",
+        IsActive = true
+    },
+    new FoodCategory
+    {
+        Id = 3,
+        CategoryName = "Biryani",
+        IsActive = true
+    },
+    new FoodCategory
+    {
+        Id = 4,
+        CategoryName = "Drinks",
+        IsActive = true
+    },
+    new FoodCategory
+    {
+        Id = 5,
+        CategoryName = "Desserts",
+        IsActive = true
+    }
+);
+
+
+
+
+
         }
+
+
+
+
     }
 }

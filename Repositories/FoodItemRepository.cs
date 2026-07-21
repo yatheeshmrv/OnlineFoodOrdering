@@ -39,14 +39,14 @@ namespace FoodOrderAPI.Repositories
         // This method adds a new food item into the database
         public async Task<FoodItem> AddFoodItemAsync(FoodItem foodItem)
         {
-            // AddAsync prepares INSERT operation
             await _context.FoodItems.AddAsync(foodItem);
-
-            // SaveChangesAsync actually saves the new row into SQL Server
             await _context.SaveChangesAsync();
 
-            // Return newly added food item with generated Id
-            return foodItem;
+            // Reload the saved item together with its category.
+            return await _context.FoodItems
+                .Include(item => item.FoodCategory)
+                .AsNoTracking()
+                .FirstAsync(item => item.Id == foodItem.Id);
         }
 
         public async Task<FoodItem?> UpdateFoodItemAsync(int id, FoodItem foodItem)
