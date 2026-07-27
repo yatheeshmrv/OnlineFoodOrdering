@@ -1,48 +1,70 @@
 ﻿using FoodOrderAPI.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrderAPI.Data
 {
-    // ApplicationDbContext is the main database context class.
-    // It connects our C# models with the database tables.
-    public class ApplicationDbContext : DbContext
+    // Main Entity Framework database context.
+    // Connects the application's models with SQL Server tables.
+    public class ApplicationDbContext
+        : IdentityDbContext<ApplicationUser>
     {
-        // Constructor receives DbContextOptions from Program.cs.
-        // This is how SQL Server connection is passed to this context.
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        // Receives the database configuration registered in Program.cs.
+        public ApplicationDbContext(
+            DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
-
         }
 
-        // DbSet represents the FoodCategories table in the database.
+        // Represents the FoodCategories table.
         public DbSet<FoodCategory> FoodCategories { get; set; }
 
-        // DbSet represents the FoodItems table in the database.
+        // Represents the FoodItems table.
         public DbSet<FoodItem> FoodItems { get; set; }
 
-        // DbSet represents the Orders table in the database.
+        // Represents the Orders table.
         public DbSet<Order> Orders { get; set; }
 
-        // DbSet represents the OrderItems table in the database.
+        // Represents the OrderItems table.
         public DbSet<OrderItem> OrderItems { get; set; }
 
-        // OnModelCreating is used to configure table relationships and column rules.
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        // Configures relationships, decimal columns and seed data.
+        protected override void OnModelCreating(
+            ModelBuilder modelBuilder)
         {
-            // Calls the base EF Core configuration first.
+            // Applies the default ASP.NET Core Identity configuration.
+            // This must be called before adding our custom configurations.
             base.OnModelCreating(modelBuilder);
 
-            // Relationship:
-            // One Order can have many OrderItems.
+            // ---------------------------------------------------------
+            // APPLICATION USER AND ORDER RELATIONSHIP
+            // ---------------------------------------------------------
+
+            // One registered user can place many orders.
+            // Order.UserId is the foreign key connected to AspNetUsers.Id.
+            modelBuilder.Entity<Order>()
+                .HasOne(order => order.User)
+                .WithMany()
+                .HasForeignKey(order => order.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ---------------------------------------------------------
+            // ORDER AND ORDER ITEM RELATIONSHIP
+            // ---------------------------------------------------------
+
+            // One Order can contain many OrderItems.
             // OrderItem.OrderId is the foreign key.
+            // Deleting an order also deletes its order items.
             modelBuilder.Entity<OrderItem>()
                 .HasOne(orderItem => orderItem.Order)
                 .WithMany(order => order.OrderItems)
                 .HasForeignKey(orderItem => orderItem.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Relationship:
+            // ---------------------------------------------------------
+            // FOOD ITEM AND ORDER ITEM RELATIONSHIP
+            // ---------------------------------------------------------
+
             // One FoodItem can appear in many OrderItems.
             // OrderItem.FoodItemId is the foreign key.
             modelBuilder.Entity<OrderItem>()
@@ -51,68 +73,73 @@ namespace FoodOrderAPI.Data
                 .HasForeignKey(orderItem => orderItem.FoodItemId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // ---------------------------------------------------------
+            // FOOD CATEGORY AND FOOD ITEM RELATIONSHIP
+            // ---------------------------------------------------------
+
+            // One FoodCategory can contain many FoodItems.
+            // FoodItem.FoodCategoryId is the foreign key.
             modelBuilder.Entity<FoodItem>()
                 .HasOne(foodItem => foodItem.FoodCategory)
                 .WithMany()
                 .HasForeignKey(foodItem => foodItem.FoodCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // UnitPrice column should store decimal values safely.
-            // Example: 199.99
+            // ---------------------------------------------------------
+            // DECIMAL COLUMN CONFIGURATION
+            // ---------------------------------------------------------
+
+            // Stores OrderItem.UnitPrice with two decimal places.
             modelBuilder.Entity<OrderItem>()
                 .Property(orderItem => orderItem.UnitPrice)
                 .HasColumnType("decimal(18,2)");
 
-            // TotalAmount column should also store decimal values safely.
-            // Example: 499.50
+            // Stores Order.TotalAmount with two decimal places.
             modelBuilder.Entity<Order>()
                 .Property(order => order.TotalAmount)
                 .HasColumnType("decimal(18,2)");
 
+            // Stores FoodItem.Price with two decimal places.
             modelBuilder.Entity<FoodItem>()
-    .Property(foodItem => foodItem.Price)
-    .HasColumnType("decimal(18,2)");
+                .Property(foodItem => foodItem.Price)
+                .HasColumnType("decimal(18,2)");
+
+            // ---------------------------------------------------------
+            // FOOD CATEGORY SEED DATA
+            // ---------------------------------------------------------
+
             modelBuilder.Entity<FoodCategory>().HasData(
-    new FoodCategory
-    {
-        Id = 1,
-        CategoryName = "Pizza",
-        IsActive = true
-    },
-    new FoodCategory
-    {
-        Id = 2,
-        CategoryName = "Burger",
-        IsActive = true
-    },
-    new FoodCategory
-    {
-        Id = 3,
-        CategoryName = "Biryani",
-        IsActive = true
-    },
-    new FoodCategory
-    {
-        Id = 4,
-        CategoryName = "Drinks",
-        IsActive = true
-    },
-    new FoodCategory
-    {
-        Id = 5,
-        CategoryName = "Desserts",
-        IsActive = true
-    }
-);
-
-
-
-
-
+                new FoodCategory
+                {
+                    Id = 1,
+                    CategoryName = "Pizza",
+                    IsActive = true
+                },
+                new FoodCategory
+                {
+                    Id = 2,
+                    CategoryName = "Burger",
+                    IsActive = true
+                },
+                new FoodCategory
+                {
+                    Id = 3,
+                    CategoryName = "Biryani",
+                    IsActive = true
+                },
+                new FoodCategory
+                {
+                    Id = 4,
+                    CategoryName = "Drinks",
+                    IsActive = true
+                },
+                new FoodCategory
+                {
+                    Id = 5,
+                    CategoryName = "Desserts",
+                    IsActive = true
+                }
+            );
         }
-
-
-
-
     }
 }

@@ -1,19 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace FoodOrderAPI.DTOs
+﻿namespace FoodOrderAPI.DTOs
 {
+    // Contains the food items requested by the authenticated customer.
+    // Customer details are obtained from the logged-in user account.
     public class CreateOrderDto
     {
-        [Required]
-        [StringLength(100)]
-        public string CustomerName { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(15)]
-        public string CustomerPhone { get; set; } = string.Empty;
-
-        [Required]
-        [MinLength(1, ErrorMessage = "At least one food item is required")]
+        // List of food items included in the order.
         public List<OrderItemRequestDto> Items { get; set; } = [];
     }
 }
