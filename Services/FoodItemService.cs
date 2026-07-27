@@ -6,53 +6,61 @@ namespace FoodOrderAPI.Services
 {
     public class FoodItemService : IFoodItemService
     {
-        // Repository used for FoodItem database operations.
-        private readonly IFoodItemRepository _foodItemRepository;
+        // Repository used for food-item database operations.
+        private readonly IFoodItemRepository
+            _foodItemRepository;
 
-        // Repository used to verify whether a FoodCategory exists.
-        private readonly IFoodCategoryRepository _foodCategoryRepository;
+        // Repository used to verify whether a category exists.
+        private readonly IFoodCategoryRepository
+            _foodCategoryRepository;
 
-        // Constructor injection.
-        // ASP.NET Core provides the repository objects automatically.
+        // Receives the repositories through dependency injection.
         public FoodItemService(
             IFoodItemRepository foodItemRepository,
             IFoodCategoryRepository foodCategoryRepository)
         {
+            // Stores the food-item repository.
             _foodItemRepository = foodItemRepository;
-            _foodCategoryRepository = foodCategoryRepository;
+
+            // Stores the food-category repository.
+            _foodCategoryRepository =
+                foodCategoryRepository;
         }
 
-        // Validates the FoodItemDto before creating or updating a food item.
-        private async Task ValidateFoodItemAsync(FoodItemDto foodItemDto)
+        // Validates a FoodItemDto before creating
+        // or updating a food item.
+        private async Task ValidateFoodItemAsync(
+            FoodItemDto foodItemDto)
         {
-            // Food item name must not be empty.
-            if (string.IsNullOrWhiteSpace(foodItemDto.Name))
+            // Ensures that the food-item name is provided.
+            if (string.IsNullOrWhiteSpace(
+                foodItemDto.Name))
             {
                 throw new ArgumentException(
                     "Food item name is required.");
             }
 
-            // Price must be greater than zero.
+            // Ensures that the price is greater than zero.
             if (foodItemDto.Price <= 0)
             {
                 throw new ArgumentException(
                     "Food item price must be greater than 0.");
             }
 
-            // FoodCategoryId must contain a valid positive value.
+            // Ensures that a positive category ID is provided.
             if (foodItemDto.FoodCategoryId <= 0)
             {
                 throw new ArgumentException(
                     "Valid food category is required.");
             }
 
-            // Check whether the category exists in the database.
-            // This prevents a foreign-key error.
+            // Checks whether the selected category exists.
             var foodCategory =
                 await _foodCategoryRepository
                     .GetFoodCategoryByIdAsync(
                         foodItemDto.FoodCategoryId);
 
+            // Prevents a database foreign-key error.
             if (foodCategory == null)
             {
                 throw new ArgumentException(
@@ -61,7 +69,6 @@ namespace FoodOrderAPI.Services
         }
 
         // Converts a FoodItem entity into a FoodItemDto.
-        // Keeping the mapping in one method avoids repeating the same code.
         private static FoodItemDto MapFoodItemToDto(
             FoodItem foodItem)
         {
@@ -71,10 +78,11 @@ namespace FoodOrderAPI.Services
                 Name = foodItem.Name,
                 Description = foodItem.Description,
                 Price = foodItem.Price,
-                FoodCategoryId = foodItem.FoodCategoryId,
+                FoodCategoryId =
+                    foodItem.FoodCategoryId,
 
-                // FoodCategory must be loaded by the repository
-                // for the category name to appear.
+                // The category must be loaded with Include()
+                // for its name to be available.
                 FoodCategoryName =
                     foodItem.FoodCategory?.CategoryName,
 
@@ -82,118 +90,180 @@ namespace FoodOrderAPI.Services
             };
         }
 
-        // Gets all food items.
+        // Gets every food item without pagination.
         public async Task<List<FoodItemDto>>
             GetAllFoodItemsAsync()
         {
+            // Gets all food-item entities.
             var foodItems =
                 await _foodItemRepository
                     .GetAllFoodItemsAsync();
 
+            // Maps the entities to DTOs.
             return foodItems
                 .Select(MapFoodItemToDto)
                 .ToList();
+        }
+
+        // Gets a filtered and paginated collection
+        // of food items.
+        public async Task<PagedResponseDto<FoodItemDto>>
+            GetPagedFoodItemsAsync(
+                FoodItemQueryParametersDto queryParameters)
+        {
+            // Sends the search, category and pagination
+            // values to the repository.
+            var result =
+                await _foodItemRepository
+                    .GetPagedFoodItemsAsync(
+                        queryParameters.Search,
+                        queryParameters.CategoryId,
+                        queryParameters.PageNumber,
+                        queryParameters.PageSize);
+
+            // Converts the retrieved entities into DTOs.
+            var foodItemDtos = result.Items
+                .Select(MapFoodItemToDto)
+                .ToList();
+
+            // Calculates the number of available pages.
+            var totalPages = (int)Math.Ceiling(
+                result.TotalCount /
+                (double)queryParameters.PageSize);
+
+            // Creates the complete paginated response.
+            return new PagedResponseDto<FoodItemDto>
+            {
+                Items = foodItemDtos,
+                PageNumber =
+                    queryParameters.PageNumber,
+                PageSize =
+                    queryParameters.PageSize,
+                TotalCount =
+                    result.TotalCount,
+                TotalPages =
+                    totalPages
+            };
         }
 
         // Gets one food item by its ID.
         public async Task<FoodItemDto?>
             GetFoodItemByIdAsync(int id)
         {
+            // Gets the food-item entity.
             var foodItem =
                 await _foodItemRepository
                     .GetFoodItemByIdAsync(id);
 
+            // Returns null when the item does not exist.
             if (foodItem == null)
             {
                 return null;
             }
 
+            // Maps the entity to a DTO.
             return MapFoodItemToDto(foodItem);
         }
 
         // Creates a new food item.
-        public async Task<FoodItemDto> AddFoodItemAsync(
-            FoodItemDto foodItemDto)
+        public async Task<FoodItemDto>
+            AddFoodItemAsync(FoodItemDto foodItemDto)
         {
-            // Validate the request before saving.
+            // Validates the request before saving.
             await ValidateFoodItemAsync(foodItemDto);
 
-            // Convert the DTO into a FoodItem entity.
+            // Converts the DTO into an entity.
             var foodItem = new FoodItem
             {
                 Name = foodItemDto.Name.Trim(),
-                Description = foodItemDto.Description?.Trim(),
+                Description =
+                    foodItemDto.Description?.Trim(),
                 Price = foodItemDto.Price,
-                FoodCategoryId = foodItemDto.FoodCategoryId,
-                IsAvailable = foodItemDto.IsAvailable
+                FoodCategoryId =
+                    foodItemDto.FoodCategoryId,
+                IsAvailable =
+                    foodItemDto.IsAvailable
             };
 
-            // Save the food item.
+            // Saves the food item.
             var addedFoodItem =
                 await _foodItemRepository
                     .AddFoodItemAsync(foodItem);
 
-            // Retrieve the saved food item again.
-            // GetFoodItemByIdAsync uses Include() and loads FoodCategory.
+            // Retrieves the saved item with its category.
             var savedFoodItem =
                 await _foodItemRepository
-                    .GetFoodItemByIdAsync(addedFoodItem.Id);
+                    .GetFoodItemByIdAsync(
+                        addedFoodItem.Id);
 
+            // Handles an unexpected retrieval failure.
             if (savedFoodItem == null)
             {
                 throw new InvalidOperationException(
-                    "The food item was created but could not be retrieved.");
+                    "The food item was created but " +
+                    "could not be retrieved.");
             }
 
-            // FoodCategoryName will now be available.
+            // Returns the mapped food item.
             return MapFoodItemToDto(savedFoodItem);
         }
 
         // Updates an existing food item.
-        public async Task<FoodItemDto?> UpdateFoodItemAsync(
-            int id,
-            FoodItemDto foodItemDto)
+        public async Task<FoodItemDto?>
+            UpdateFoodItemAsync(
+                int id,
+                FoodItemDto foodItemDto)
         {
-            // Validate the request before updating.
+            // Validates the request before updating.
             await ValidateFoodItemAsync(foodItemDto);
 
-            // Convert the DTO into a FoodItem entity.
+            // Converts the DTO into an entity.
             var foodItem = new FoodItem
             {
                 Name = foodItemDto.Name.Trim(),
-                Description = foodItemDto.Description?.Trim(),
+                Description =
+                    foodItemDto.Description?.Trim(),
                 Price = foodItemDto.Price,
-                FoodCategoryId = foodItemDto.FoodCategoryId,
-                IsAvailable = foodItemDto.IsAvailable
+                FoodCategoryId =
+                    foodItemDto.FoodCategoryId,
+                IsAvailable =
+                    foodItemDto.IsAvailable
             };
 
-            // Update the existing item.
+            // Updates the existing item.
             var updatedFoodItem =
                 await _foodItemRepository
-                    .UpdateFoodItemAsync(id, foodItem);
+                    .UpdateFoodItemAsync(
+                        id,
+                        foodItem);
 
+            // Returns null when the item does not exist.
             if (updatedFoodItem == null)
             {
                 return null;
             }
 
-            // Retrieve it again with the related FoodCategory.
+            // Retrieves the updated item with its category.
             var savedFoodItem =
                 await _foodItemRepository
-                    .GetFoodItemByIdAsync(updatedFoodItem.Id);
+                    .GetFoodItemByIdAsync(
+                        updatedFoodItem.Id);
 
+            // Handles an unexpected retrieval failure.
             if (savedFoodItem == null)
             {
                 throw new InvalidOperationException(
-                    "The food item was updated but could not be retrieved.");
+                    "The food item was updated but " +
+                    "could not be retrieved.");
             }
 
-            // FoodCategoryName will now be included in the response.
+            // Returns the mapped food item.
             return MapFoodItemToDto(savedFoodItem);
         }
 
         // Deletes an existing food item.
-        public async Task<bool> DeleteFoodItemAsync(int id)
+        public async Task<bool>
+            DeleteFoodItemAsync(int id)
         {
             return await _foodItemRepository
                 .DeleteFoodItemAsync(id);

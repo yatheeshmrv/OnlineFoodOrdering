@@ -6,19 +6,19 @@ namespace FoodOrderAPI.Repositories
 {
     public class FoodItemRepository : IFoodItemRepository
     {
-        // ApplicationDbContext is used to communicate with SQL Server database
+        // Used to communicate with the SQL Server database.
         private readonly ApplicationDbContext _context;
 
-        // Constructor Injection
-        // ASP.NET Core provides ApplicationDbContext object automatically
+        // Receives ApplicationDbContext through dependency injection.
         public FoodItemRepository(ApplicationDbContext context)
         {
+            // Stores the injected database context.
             _context = context;
         }
 
-        // This method gets all food items from database
-        // Include is used to load related FoodCategory data also
-        public async Task<List<FoodItem>> GetAllFoodItemsAsync()
+        // Gets all food items together with their categories.
+        public async Task<List<FoodItem>>
+            GetAllFoodItemsAsync()
         {
             return await _context.FoodItems
                 .Include(foodItem => foodItem.FoodCategory)
@@ -26,75 +26,146 @@ namespace FoodOrderAPI.Repositories
                 .ToListAsync();
         }
 
-        // This method gets one food item based on Id
-        // Include loads category details with the food item
-        public async Task<FoodItem?> GetFoodItemByIdAsync(int id)
+        // Gets a single page of food items after applying
+        // optional search and category filters.
+        public async Task<(List<FoodItem> Items, int TotalCount)>
+            GetPagedFoodItemsAsync(
+                string? search,
+                int? categoryId,
+                int pageNumber,
+                int pageSize)
+        {
+            // Begins with all food items.
+            // IQueryable builds the SQL query gradually.
+            var query = _context.FoodItems
+                .Include(foodItem => foodItem.FoodCategory)
+                .AsNoTracking()
+                .AsQueryable();
+
+            // Applies the search filter only when text is provided.
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                // Removes unnecessary spaces from the search text.
+                var searchTerm = search.Trim();
+
+                // Searches both the item name and description.
+                query = query.Where(foodItem =>
+                    foodItem.Name.Contains(searchTerm) ||
+                    foodItem.Description.Contains(searchTerm));
+            }
+
+            // Applies the category filter when a category ID is given.
+            if (categoryId.HasValue)
+            {
+                query = query.Where(foodItem =>
+                    foodItem.FoodCategoryId ==
+                    categoryId.Value);
+            }
+
+            // Counts all matching records before pagination.
+            // This is required to calculate the total number of pages.
+            var totalCount = await query.CountAsync();
+
+            // Calculates how many records must be skipped.
+            var recordsToSkip =
+                (pageNumber - 1) * pageSize;
+
+            // Orders the results to keep pagination consistent,
+            // skips previous pages and retrieves the requested page.
+            var items = await query
+                .OrderBy(foodItem => foodItem.Id)
+                .Skip(recordsToSkip)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Returns both the current page and total matching count.
+            return (items, totalCount);
+        }
+
+        // Gets one food item based on its ID.
+        public async Task<FoodItem?>
+            GetFoodItemByIdAsync(int id)
         {
             return await _context.FoodItems
                 .Include(foodItem => foodItem.FoodCategory)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(foodItem => foodItem.Id == id);
+                .FirstOrDefaultAsync(
+                    foodItem => foodItem.Id == id);
         }
 
-        // This method adds a new food item into the database
-        public async Task<FoodItem> AddFoodItemAsync(FoodItem foodItem)
+        // Adds a new food item to the database.
+        public async Task<FoodItem>
+            AddFoodItemAsync(FoodItem foodItem)
         {
+            // Adds the new food item to EF Core tracking.
             await _context.FoodItems.AddAsync(foodItem);
+
+            // Saves the new food item to the database.
             await _context.SaveChangesAsync();
 
-            // Reload the saved item together with its category.
+            // Reloads and returns the item with its category.
             return await _context.FoodItems
                 .Include(item => item.FoodCategory)
                 .AsNoTracking()
                 .FirstAsync(item => item.Id == foodItem.Id);
         }
-        // sample method 
 
-        public async Task<FoodItem?> UpdateFoodItemAsync(int id, FoodItem foodItem)
+        // Updates an existing food item.
+        public async Task<FoodItem?>
+            UpdateFoodItemAsync(
+                int id,
+                FoodItem foodItem)
         {
-            // First, find the existing food item from database using route id
-            var existingFoodItem = await _context.FoodItems.FindAsync(id);
+            // Finds the existing food item using the route ID.
+            var existingFoodItem =
+                await _context.FoodItems.FindAsync(id);
 
-            // If food item is not found, return null
+            // Returns null when the food item does not exist.
             if (existingFoodItem == null)
             {
                 return null;
             }
 
-            // Update existing food item values with new values from request body
+            // Copies the new values to the existing entity.
             existingFoodItem.Name = foodItem.Name;
-            existingFoodItem.Description = foodItem.Description;
+            existingFoodItem.Description =
+                foodItem.Description;
             existingFoodItem.Price = foodItem.Price;
-            existingFoodItem.FoodCategoryId = foodItem.FoodCategoryId;
-            existingFoodItem.IsAvailable = foodItem.IsAvailable;
+            existingFoodItem.FoodCategoryId =
+                foodItem.FoodCategoryId;
+            existingFoodItem.IsAvailable =
+                foodItem.IsAvailable;
 
-            // Save updated values into database
+            // Saves the changes to the database.
             await _context.SaveChangesAsync();
 
-            // Return updated food item
+            // Returns the updated food item.
             return existingFoodItem;
         }
 
-        // This method deletes an existing food item based on Id
-        public async Task<bool> DeleteFoodItemAsync(int id)
+        // Deletes an existing food item based on its ID.
+        public async Task<bool>
+            DeleteFoodItemAsync(int id)
         {
-            // First, find the existing food item from database
-            var existingFoodItem = await _context.FoodItems
-                .FirstOrDefaultAsync(item => item.Id == id);
+            // Finds the existing food item.
+            var existingFoodItem =
+                await _context.FoodItems
+                    .FirstOrDefaultAsync(
+                        item => item.Id == id);
 
-            // If food item is not found, return false
+            // Returns false when the item does not exist.
             if (existingFoodItem == null)
             {
                 return false;
             }
 
-            // Remove prepares DELETE operation
+            // Marks the food item for deletion.
             _context.FoodItems.Remove(existingFoodItem);
 
-            // SaveChangesAsync sends DELETE command to SQL Server
+            // Sends the DELETE command to SQL Server.
             await _context.SaveChangesAsync();
 
-            // Return true because delete was successful
+            // Confirms that deletion succeeded.
             return true;
         }
     }

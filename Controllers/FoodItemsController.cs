@@ -14,7 +14,12 @@ namespace FoodOrderAPI.Controllers
     public class FoodItemsController : ControllerBase
     {
         // Performs food-item business operations.
-        private readonly IFoodItemService _foodItemService;
+        private readonly IFoodItemService
+            _foodItemService;
+
+        // Validates search, filtering and pagination values.
+        private readonly IValidator<FoodItemQueryParametersDto>
+            _queryParametersValidator;
 
         // Validates requests for creating food items.
         private readonly IValidator<CreateFoodItemDto>
@@ -28,6 +33,8 @@ namespace FoodOrderAPI.Controllers
         // through constructor dependency injection.
         public FoodItemsController(
             IFoodItemService foodItemService,
+            IValidator<FoodItemQueryParametersDto>
+                queryParametersValidator,
             IValidator<CreateFoodItemDto>
                 createFoodItemValidator,
             IValidator<UpdateFoodItemDto>
@@ -36,11 +43,15 @@ namespace FoodOrderAPI.Controllers
             // Stores the injected food-item service.
             _foodItemService = foodItemService;
 
-            // Stores the injected create-item validator.
+            // Stores the query-parameter validator.
+            _queryParametersValidator =
+                queryParametersValidator;
+
+            // Stores the create-item validator.
             _createFoodItemValidator =
                 createFoodItemValidator;
 
-            // Stores the injected update-item validator.
+            // Stores the update-item validator.
             _updateFoodItemValidator =
                 updateFoodItemValidator;
         }
@@ -50,19 +61,59 @@ namespace FoodOrderAPI.Controllers
         // ---------------------------------------------------------
 
         // GET: api/FoodItems
-        // Allows anyone to view all food items.
+        // Allows anyone to view food items.
+        //
+        // Supports:
+        // - Searching by food-item name or description
+        // - Filtering by food-category ID
+        // - Pagination
+        //
+        // Example:
+        // api/FoodItems?search=paneer&categoryId=1
+        //     &pageNumber=1&pageSize=10
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<List<FoodItemDto>>>
-            GetAllFoodItems()
+        public async Task<
+            ActionResult<PagedResponseDto<FoodItemDto>>>
+            GetAllFoodItems(
+                [FromQuery]
+                FoodItemQueryParametersDto queryParameters)
         {
-            // Retrieves all food items through the service.
-            var foodItems =
-                await _foodItemService
-                    .GetAllFoodItemsAsync();
+            // Executes FluentValidation rules for the
+            // search, filtering and pagination values.
+            var validationResult =
+                await _queryParametersValidator
+                    .ValidateAsync(queryParameters);
 
-            // Returns HTTP 200 with all food items.
-            return Ok(foodItems);
+            // Returns HTTP 400 when query values are invalid.
+            if (!validationResult.IsValid)
+            {
+                // Groups validation errors by property name.
+                var errors = validationResult.Errors
+                    .GroupBy(error => error.PropertyName)
+                    .ToDictionary(
+                        group => group.Key,
+                        group => group
+                            .Select(error => error.ErrorMessage)
+                            .ToArray());
+
+                return BadRequest(new
+                {
+                    message = "Validation failed.",
+                    errors
+                });
+            }
+
+            // Gets the filtered and paginated result
+            // through the service layer.
+            var result =
+                await _foodItemService
+                    .GetPagedFoodItemsAsync(
+                        queryParameters);
+
+            // Returns HTTP 200 with food items
+            // and pagination information.
+            return Ok(result);
         }
 
         // GET: api/FoodItems/1
