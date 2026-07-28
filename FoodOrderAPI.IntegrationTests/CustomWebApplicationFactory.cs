@@ -14,6 +14,8 @@ namespace FoodOrderAPI.IntegrationTests
     public class CustomWebApplicationFactory
         : WebApplicationFactory<Program>
     {
+        private readonly string _databaseName =
+        $"OnlineFoodOrderingIntegrationTests_{Guid.NewGuid()}";
         public CustomWebApplicationFactory()
         {
             const string testJwtKey =
@@ -81,8 +83,7 @@ namespace FoodOrderAPI.IntegrationTests
                 // Adds an isolated in-memory database.
                 services.AddDbContext<ApplicationDbContext>(
                     options =>
-                        options.UseInMemoryDatabase(
-                            "OnlineFoodOrderingIntegrationTests"));
+                        options.UseInMemoryDatabase(_databaseName));
 
                 // Creates a service scope for test data.
                 using var serviceProvider =
