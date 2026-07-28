@@ -1,0 +1,83 @@
+Summary
+  Generated on: 28-07-2026 - 16:58:14
+  Coverage date: 28-07-2026 - 16:54:51 - 28-07-2026 - 16:54:56
+  Parser: MultiReport (2x Cobertura)
+  Assemblies: 1
+  Classes: 61
+  Files: 70
+  Line coverage: 28.5%
+  Covered lines: 1465
+  Uncovered lines: 3670
+  Coverable lines: 5135
+  Total lines: 7908
+  Branch coverage: 32.4% (128 of 394)
+  Covered branches: 128
+  Total branches: 394
+  Method coverage: 64% (155 of 242)
+  Full method coverage: 56.6% (137 of 242)
+  Covered methods: 155
+  Fully covered methods: 137
+  Total methods: 242
+
+FoodOrderAPI                                                    28.5%
+  FoodOrderAPI.Controllers.AuthController                       61.3%
+  FoodOrderAPI.Controllers.FoodCategoryController                 74%
+  FoodOrderAPI.Controllers.FoodItemsController                  15.3%
+  FoodOrderAPI.Controllers.OrderController                      88.3%
+  FoodOrderAPI.Data.AdminSeeder                                 75.8%
+  FoodOrderAPI.Data.ApplicationDbContext                         100%
+  FoodOrderAPI.Data.RoleSeeder                                    73%
+  FoodOrderAPI.DTOs.CreateFoodCategoryDto                        100%
+  FoodOrderAPI.DTOs.CreateFoodItemDto                              0%
+  FoodOrderAPI.DTOs.CreateOrderDto                               100%
+  FoodOrderAPI.DTOs.CreateOrderResponseDto                       100%
+  FoodOrderAPI.DTOs.FoodCategoryResponseDto                        0%
+  FoodOrderAPI.DTOs.FoodItemDto                                  100%
+  FoodOrderAPI.DTOs.FoodItemQueryParametersDto                   100%
+  FoodOrderAPI.DTOs.LoginDto                                     100%
+  FoodOrderAPI.DTOs.OrderDto                                     100%
+  FoodOrderAPI.DTOs.OrderItemDto                                 100%
+  FoodOrderAPI.DTOs.OrderItemRequestDto                          100%
+  FoodOrderAPI.DTOs.PagedResponseDto<T>                          100%
+  FoodOrderAPI.DTOs.RegisterDto                                  100%
+  FoodOrderAPI.DTOs.UpdateFoodCategoryDto                        100%
+  FoodOrderAPI.DTOs.UpdateFoodItemDto                              0%
+  FoodOrderAPI.DTOs.UpdateOrderStatusDto                         100%
+  FoodOrderAPI.ExceptionHandlers.GlobalExceptionHandler         11.3%
+  FoodOrderAPI.Migrations.AddFoodItemOrderAndOrderItemTables       0%
+  FoodOrderAPI.Migrations.AddIdentityTables                        0%
+  FoodOrderAPI.Migrations.AddUserIdToOrders                        0%
+  FoodOrderAPI.Migrations.ApplicationDbContextModelSnapshot        0%
+  FoodOrderAPI.Migrations.ConfigureFoodItemPrice                   0%
+  FoodOrderAPI.Migrations.CreateFoodCategoryTable                  0%
+  FoodOrderAPI.Migrations.PersistOrders                            0%
+  FoodOrderAPI.Migrations.RestoreFoodCategorySeedData              0%
+  FoodOrderAPI.Migrations.SeedFoodCategoryData                     0%
+  FoodOrderAPI.Migrations.SyncCurrentModel                         0%
+  FoodOrderAPI.Migrations.UpdateFoodItemCategoryRelation           0%
+  FoodOrderAPI.Models.ApplicationUser                            100%
+  FoodOrderAPI.Models.FoodCategory                               100%
+  FoodOrderAPI.Models.FoodItem                                   100%
+  FoodOrderAPI.Models.Order                                       90%
+  FoodOrderAPI.Models.OrderItem                                 57.1%
+  FoodOrderAPI.Repositories.FoodCategoryRepository              90.4%
+  FoodOrderAPI.Repositories.FoodItemRepository                  34.1%
+  FoodOrderAPI.Repositories.OrderRepository                      100%
+  FoodOrderAPI.Services.FoodCategoryService                     85.7%
+  FoodOrderAPI.Services.FoodItemService                         94.8%
+  FoodOrderAPI.Services.OrderService                             100%
+  FoodOrderAPI.Services.TokenService                             100%
+  FoodOrderAPI.Validators.CreateFoodCategoryDtoValidator         100%
+  FoodOrderAPI.Validators.CreateFoodItemDtoValidator             100%
+  FoodOrderAPI.Validators.CreateOrderDtoValidator                100%
+  FoodOrderAPI.Validators.FoodItemQueryParametersDtoValidator    100%
+  FoodOrderAPI.Validators.LoginDtoValidator                      100%
+  FoodOrderAPI.Validators.RegisterDtoValidator                   100%
+  FoodOrderAPI.Validators.UpdateFoodCategoryDtoValidator         100%
+  FoodOrderAPI.Validators.UpdateFoodItemDtoValidator             100%
+  FoodOrderAPI.Validators.UpdateOrderStatusDtoValidator          100%
+  Microsoft.AspNetCore.OpenApi.Generated                           0%
+  OnlineFoodOrdering.Controllers.WeatherForecastController         0%
+  OnlineFoodOrdering.Program                                     100%
+  OnlineFoodOrdering.WeatherForecast                               0%
+  System.Runtime.CompilerServices                                  0%
