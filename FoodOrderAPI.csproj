@@ -1,11 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>fea34583-6f5e-4af2-af19-17ff3f47a673</UserSecretsId>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>fea34583-6f5e-4af2-af19-17ff3f47a673</UserSecretsId>
+
+		<DefaultItemExcludes>
+			$(DefaultItemExcludes);
+			FoodOrderAPI.UnitTests\**;
+			FoodOrderAPI.IntegrationTests\**
+		</DefaultItemExcludes>
+	</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
