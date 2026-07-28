@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="../FoodOrderAPI.UnitTests/FoodOrderAPI.UnitTests.csproj" Id="555a0476-b830-4f27-a877-39771a54b4b0" />
   <Project Path="FoodOrderAPI.csproj" />
 </Solution>
