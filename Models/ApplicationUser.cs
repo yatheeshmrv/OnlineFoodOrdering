@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace FoodOrderAPI.Models
 {
@@ -12,5 +13,17 @@ namespace FoodOrderAPI.Models
         [Required]
         [StringLength(100)]
         public string FullName { get; set; } = string.Empty;
+
+        // Navigation property for the user's shopping cart.
+        // The database relationship will ensure that one user
+        // can have only one cart.
+        //
+        // This property is nullable because the cart will be created
+        // only when the customer first views it or adds an item.
+        //
+        // JsonIgnore prevents cart information from being returned
+        // whenever an ApplicationUser object is serialized.
+        [JsonIgnore]
+        public Cart? Cart { get; set; }
     }
 }

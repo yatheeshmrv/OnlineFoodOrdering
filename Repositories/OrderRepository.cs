@@ -4,10 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FoodOrderAPI.Repositories
 {
+    // Handles database operations related to orders.
     public class OrderRepository : IOrderRepository
     {
+        // EF Core database context.
         private readonly ApplicationDbContext _context;
 
+        // Receives the database context through dependency injection.
         public OrderRepository(ApplicationDbContext context)
         {
             _context = context;
@@ -67,11 +70,44 @@ namespace FoodOrderAPI.Repositories
             foreach (var orderItem in order.OrderItems)
             {
                 // FoodItemId already identifies the existing food item.
-                // Prevent EF Core from trying to insert it again.
+                // Prevents EF Core from trying to insert it again.
                 orderItem.FoodItem = null;
             }
 
+            // Marks the new order and its order items for insertion.
             await _context.Orders.AddAsync(order);
+
+            // Saves the new order to the database.
+            await _context.SaveChangesAsync();
+
+            return order;
+        }
+
+        // Creates an order from the cart and clears its cart items.
+        public async Task<Order> CreateOrderFromCartAsync(
+            Order order,
+            int cartId)
+        {
+            foreach (var orderItem in order.OrderItems)
+            {
+                // FoodItemId already references an existing food item.
+                // Prevents EF Core from trying to insert it again.
+                orderItem.FoodItem = null;
+            }
+
+            // Loads the items belonging to the cart being checked out.
+            var cartItems = await _context.CartItems
+                .Where(cartItem => cartItem.CartId == cartId)
+                .ToListAsync();
+
+            // Marks the new order and its order items for insertion.
+            await _context.Orders.AddAsync(order);
+
+            // Marks all cart items for deletion while retaining the cart.
+            _context.CartItems.RemoveRange(cartItems);
+
+            // Inserts the order and deletes the cart items together.
+            // EF Core executes this SaveChanges operation transactionally.
             await _context.SaveChangesAsync();
 
             return order;
@@ -92,8 +128,10 @@ namespace FoodOrderAPI.Repositories
                 return null;
             }
 
+            // Applies the new status to the order.
             order.OrderStatus = orderStatus;
 
+            // Saves the status change.
             await _context.SaveChangesAsync();
 
             return order;
@@ -109,7 +147,10 @@ namespace FoodOrderAPI.Repositories
                 return false;
             }
 
+            // Marks the order for deletion.
             _context.Orders.Remove(order);
+
+            // Saves the deletion.
             await _context.SaveChangesAsync();
 
             return true;

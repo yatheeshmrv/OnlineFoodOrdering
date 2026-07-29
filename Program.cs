@@ -27,8 +27,11 @@ namespace OnlineFoodOrdering
             // Registers API controllers in the dependency injection container.
             builder.Services.AddControllers();
 
-            // Adding Validator with dependency injection for CreateOrderDtoValidator
-            builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderDtoValidator>();
+            // Finds and registers all FluentValidation validators
+            // in this assembly, including both cart validators.
+            builder.Services
+                .AddValidatorsFromAssemblyContaining<
+                    CreateOrderDtoValidator>();
 
             // ---------------------------------------------------------
             // DATABASE CONFIGURATION
@@ -40,7 +43,6 @@ namespace OnlineFoodOrdering
                 options.UseSqlServer(
                     builder.Configuration.GetConnectionString(
                         "DefaultConnection")));
-
 
             // ---------------------------------------------------------
             // REPOSITORY REGISTRATION
@@ -59,6 +61,10 @@ namespace OnlineFoodOrdering
                 IOrderRepository,
                 OrderRepository>();
 
+            // Registers shopping-cart database operations.
+            builder.Services.AddScoped<
+                ICartRepository,
+                CartRepository>();
 
             // ---------------------------------------------------------
             // SERVICE REGISTRATION
@@ -76,6 +82,11 @@ namespace OnlineFoodOrdering
             builder.Services.AddScoped<
                 IOrderService,
                 OrderService>();
+
+            // Registers shopping-cart business logic.
+            builder.Services.AddScoped<
+                ICartService,
+                CartService>();
 
             // Generates JWT tokens after a successful login.
             builder.Services.AddScoped<
@@ -118,7 +129,6 @@ namespace OnlineFoodOrdering
             // Enables standardized ProblemDetails error responses.
             builder.Services.AddProblemDetails();
 
-
             // ---------------------------------------------------------
             // ASP.NET CORE IDENTITY
             // ---------------------------------------------------------
@@ -149,7 +159,6 @@ namespace OnlineFoodOrdering
                 // password reset and email confirmation.
                 .AddDefaultTokenProviders();
 
-
             // ---------------------------------------------------------
             // JWT CONFIGURATION VALUES
             // ---------------------------------------------------------
@@ -166,7 +175,6 @@ namespace OnlineFoodOrdering
             var jwtAudience = builder.Configuration["Jwt:Audience"]
                 ?? throw new InvalidOperationException(
                     "JWT audience is missing.");
-
 
             // ---------------------------------------------------------
             // JWT AUTHENTICATION
@@ -218,18 +226,15 @@ namespace OnlineFoodOrdering
                         };
                 });
 
-
             // Enables authorization attributes such as:
             // [Authorize] and [Authorize(Roles = "Admin")].
             builder.Services.AddAuthorization();
-
 
             // ---------------------------------------------------------
             // BUILD THE APPLICATION
             // ---------------------------------------------------------
 
             var app = builder.Build();
-
 
             // ---------------------------------------------------------
             // HTTP REQUEST PIPELINE

@@ -28,6 +28,12 @@ namespace FoodOrderAPI.Data
         // Represents the OrderItems table.
         public DbSet<OrderItem> OrderItems { get; set; }
 
+        // Represents the Carts table.
+        public DbSet<Cart> Carts { get; set; }
+
+        // Represents the CartItems table.
+        public DbSet<CartItem> CartItems { get; set; }
+
         // Configures relationships, decimal columns and seed data.
         protected override void OnModelCreating(
             ModelBuilder modelBuilder)
@@ -84,6 +90,70 @@ namespace FoodOrderAPI.Data
                 .WithMany()
                 .HasForeignKey(foodItem => foodItem.FoodCategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ---------------------------------------------------------
+            // APPLICATION USER AND CART RELATIONSHIP
+            // ---------------------------------------------------------
+
+            // One registered user can have only one shopping cart.
+            // Cart.UserId is the foreign key connected to AspNetUsers.Id.
+            //
+            // Deleting a user also deletes that user's cart.
+            modelBuilder.Entity<Cart>()
+                .HasOne(cart => cart.User)
+                .WithOne(user => user.Cart)
+                .HasForeignKey<Cart>(cart => cart.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Creates a unique database index on UserId.
+            // This provides an additional database-level guarantee
+            // that one user cannot have multiple carts.
+            modelBuilder.Entity<Cart>()
+                .HasIndex(cart => cart.UserId)
+                .IsUnique();
+
+            // ---------------------------------------------------------
+            // CART AND CART ITEM RELATIONSHIP
+            // ---------------------------------------------------------
+
+            // One Cart can contain many CartItems.
+            // CartItem.CartId is the foreign key.
+            //
+            // Deleting or clearing a cart record also deletes
+            // all CartItems belonging to it.
+            modelBuilder.Entity<CartItem>()
+                .HasOne(cartItem => cartItem.Cart)
+                .WithMany(cart => cart.CartItems)
+                .HasForeignKey(cartItem => cartItem.CartId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ---------------------------------------------------------
+            // FOOD ITEM AND CART ITEM RELATIONSHIP
+            // ---------------------------------------------------------
+
+            // One FoodItem can appear in multiple customer carts.
+            // CartItem.FoodItemId is the foreign key.
+            //
+            // Restrict prevents deletion of a FoodItem while it is
+            // still referenced by any customer's cart.
+            modelBuilder.Entity<CartItem>()
+                .HasOne(cartItem => cartItem.FoodItem)
+                .WithMany()
+                .HasForeignKey(cartItem => cartItem.FoodItemId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Prevents the same FoodItem from being stored as multiple
+            // CartItem rows inside the same cart.
+            //
+            // When the same food item is added again, its Quantity
+            // will be increased by the service instead.
+            modelBuilder.Entity<CartItem>()
+                .HasIndex(cartItem => new
+                {
+                    cartItem.CartId,
+                    cartItem.FoodItemId
+                })
+                .IsUnique();
 
             // ---------------------------------------------------------
             // DECIMAL COLUMN CONFIGURATION
