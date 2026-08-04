@@ -1,4 +1,4 @@
-﻿using FoodOrderAPI.Models;
+using FoodOrderAPI.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -186,6 +186,22 @@ namespace FoodOrderAPI.Data
             modelBuilder.Entity<Order>()
                 .Property(order => order.DeliveryInstructions)
                 .HasMaxLength(500);
+
+            // ---------------------------------------------------------
+            // ORDER PAYMENT CONFIGURATION
+            // ---------------------------------------------------------
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.PaymentMethod)
+                .IsRequired()
+                .HasMaxLength(30)
+                .HasDefaultValue(PaymentMethods.CashOnDelivery);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.PaymentStatus)
+                .IsRequired()
+                .HasMaxLength(20)
+                .HasDefaultValue(PaymentStatuses.Pending);
 
             // ---------------------------------------------------------
             // ORDER AND ORDER ITEM RELATIONSHIP

@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace FoodOrderAPI.Models
 {
@@ -22,6 +22,14 @@ namespace FoodOrderAPI.Models
         // Current status of the order.
         // Example: Pending, Confirmed, Preparing, Delivered.
         public string OrderStatus { get; set; } = "Pending";
+
+        // Payment method selected during checkout.
+        public string PaymentMethod { get; set; } =
+            PaymentMethods.CashOnDelivery;
+
+        // Current payment-processing state of the order.
+        public string PaymentStatus { get; set; } =
+            PaymentStatuses.Pending;
 
         // Date and time when the order was placed.
         public DateTime OrderDate { get; set; } = DateTime.Now;

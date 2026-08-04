@@ -1,5 +1,6 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FoodOrderAPI.DTOs;
+using FoodOrderAPI.Models;
 
 namespace FoodOrderAPI.Validators
 {
@@ -14,6 +15,15 @@ namespace FoodOrderAPI.Validators
                 .GreaterThan(0)
                 .WithMessage(
                     "A valid delivery address must be selected.");
+
+            RuleFor(checkout => checkout.PaymentMethod)
+                .NotEmpty()
+                .WithMessage(
+                    "A payment method must be selected.")
+                .Must(PaymentMethods.IsSupported)
+                .WithMessage(
+                    "CashOnDelivery is the only supported " +
+                    "payment method.");
 
             RuleFor(checkout =>
                     checkout.DeliveryInstructions)

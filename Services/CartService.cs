@@ -1,4 +1,4 @@
-﻿using FoodOrderAPI.DTOs;
+using FoodOrderAPI.DTOs;
 using FoodOrderAPI.Models;
 using FoodOrderAPI.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -369,6 +369,20 @@ namespace FoodOrderAPI.Services
                 };
             }
 
+            // Keeps payment validation active for direct service calls
+            // that do not pass through FluentValidation.
+            if (!PaymentMethods.IsSupported(
+                    checkoutDto.PaymentMethod))
+            {
+                return new CreateOrderResponseDto
+                {
+                    IsSuccess = false,
+                    Message =
+                        "CashOnDelivery is the only supported " +
+                        "payment method."
+                };
+            }
+
             // Prevents delivery instructions that exceed
             // the database column limit.
             if (checkoutDto.DeliveryInstructions?.Length > 500)
@@ -467,6 +481,13 @@ namespace FoodOrderAPI.Services
 
                 // Every new order begins with Pending status.
                 OrderStatus = "Pending",
+
+                // Copies the selected payment method into the order.
+                PaymentMethod = PaymentMethods.Normalize(
+                    checkoutDto.PaymentMethod),
+
+                // Cash-on-delivery remains unpaid until completion.
+                PaymentStatus = PaymentStatuses.Pending,
 
                 // Stores the order date in UTC.
                 OrderDate = DateTime.UtcNow,
@@ -682,6 +703,8 @@ namespace FoodOrderAPI.Services
                 CustomerPhone = order.CustomerPhone,
                 TotalAmount = order.TotalAmount,
                 OrderStatus = order.OrderStatus,
+                PaymentMethod = order.PaymentMethod,
+                PaymentStatus = order.PaymentStatus,
                 OrderDate = order.OrderDate,
 
                 // Maps the immutable delivery-address snapshot.

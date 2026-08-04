@@ -1,4 +1,4 @@
-﻿namespace FoodOrderAPI.DTOs
+namespace FoodOrderAPI.DTOs
 {
     // Represents an order returned to customers and administrators.
     public class OrderDto
@@ -18,6 +18,12 @@
         // Current order status.
         // Examples: Pending, Confirmed, Preparing or Delivered.
         public string OrderStatus { get; set; } = string.Empty;
+
+        // Payment method selected when the order was placed.
+        public string PaymentMethod { get; set; } = string.Empty;
+
+        // Current payment status of the order.
+        public string PaymentStatus { get; set; } = string.Empty;
 
         // Date and time when the order was placed.
         public DateTime OrderDate { get; set; }

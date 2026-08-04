@@ -1,4 +1,4 @@
-﻿using FoodOrderAPI.DTOs;
+using FoodOrderAPI.DTOs;
 using FoodOrderAPI.Models;
 using FoodOrderAPI.Repositories;
 
@@ -181,6 +181,8 @@ namespace FoodOrderAPI.Services
                 CustomerPhone = order.CustomerPhone,
                 TotalAmount = order.TotalAmount,
                 OrderStatus = order.OrderStatus,
+                PaymentMethod = order.PaymentMethod,
+                PaymentStatus = order.PaymentStatus,
                 OrderDate = order.OrderDate,
 
                 // Immutable delivery-address snapshot.
