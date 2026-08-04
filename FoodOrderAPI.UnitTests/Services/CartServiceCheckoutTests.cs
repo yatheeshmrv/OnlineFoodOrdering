@@ -1,4 +1,5 @@
-﻿using FoodOrderAPI.Models;
+﻿using FoodOrderAPI.DTOs;
+using FoodOrderAPI.Models;
 using FoodOrderAPI.Repositories;
 using FoodOrderAPI.Services;
 using Microsoft.AspNetCore.Identity;
@@ -40,6 +41,52 @@ namespace FoodOrderAPI.UnitTests.Services
             };
         }
 
+        // Creates a valid delivery address belonging
+        // to the test customer.
+        private static UserAddress CreateValidAddress()
+        {
+            return new UserAddress
+            {
+                Id = 1,
+                UserId = "user-1",
+                AddressLabel = "Home",
+                RecipientName = "Yatheesh",
+                RecipientPhone = "9876543210",
+                AddressLine1 = "12, MG Road",
+                AddressLine2 = "Apartment 4B",
+                Landmark = "Near Metro Station",
+                City = "Bengaluru",
+                State = "Karnataka",
+                PostalCode = "560001",
+                IsDefault = true
+            };
+        }
+
+        // Creates the request now required by CheckoutAsync.
+        private static CheckoutDto CreateCheckoutDto()
+        {
+            return new CheckoutDto
+            {
+                UserAddressId = 1,
+                DeliveryInstructions =
+                    "  Call when you arrive.  "
+            };
+        }
+
+        // Configures the address repository to return
+        // the valid address belonging to the test customer.
+        private static void SetupValidAddress(
+            Mock<IUserAddressRepository>
+                userAddressRepositoryMock)
+        {
+            userAddressRepositoryMock
+                .Setup(repository =>
+                    repository.GetUserAddressByIdAsync(
+                        1,
+                        "user-1"))
+                .ReturnsAsync(CreateValidAddress());
+        }
+
         // Creates a cart containing one item.
         private static Cart CreateCartWithItem(
             int foodItemId = 10,
@@ -67,13 +114,17 @@ namespace FoodOrderAPI.UnitTests.Services
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task CheckoutAsync_WhenUserIdIsMissing_ReturnsFailure()
+        public async Task
+            CheckoutAsync_WhenUserIdIsMissing_ReturnsFailure()
         {
             var cartRepositoryMock =
                 new Mock<ICartRepository>();
 
             var orderRepositoryMock =
                 new Mock<IOrderRepository>();
+
+            var userAddressRepositoryMock =
+                new Mock<IUserAddressRepository>();
 
             var userManagerMock =
                 CreateUserManagerMock();
@@ -82,14 +133,89 @@ namespace FoodOrderAPI.UnitTests.Services
                 cartRepositoryMock.Object,
                 new Mock<IFoodItemRepository>().Object,
                 orderRepositoryMock.Object,
+                userAddressRepositoryMock.Object,
                 userManagerMock.Object);
 
             var result =
-                await service.CheckoutAsync(" ");
+                await service.CheckoutAsync(
+                    CreateCheckoutDto(),
+                    " ");
 
             Assert.False(result.IsSuccess);
             Assert.Equal(
                 "Authenticated user ID is missing.",
+                result.Message);
+            Assert.Null(result.Order);
+
+            userAddressRepositoryMock.Verify(
+                repository =>
+                    repository.GetUserAddressByIdAsync(
+                        It.IsAny<int>(),
+                        It.IsAny<string>()),
+                Times.Never);
+
+            userManagerMock.Verify(
+                manager =>
+                    manager.FindByIdAsync(
+                        It.IsAny<string>()),
+                Times.Never);
+
+            cartRepositoryMock.Verify(
+                repository =>
+                    repository.GetOrCreateCartAsync(
+                        It.IsAny<string>()),
+                Times.Never);
+
+            orderRepositoryMock.Verify(
+                repository =>
+                    repository.CreateOrderFromCartAsync(
+                        It.IsAny<Order>(),
+                        It.IsAny<int>()),
+                Times.Never);
+        }
+
+        // ---------------------------------------------------------
+        // DELIVERY ADDRESS NOT FOUND
+        // ---------------------------------------------------------
+
+        [Fact]
+        public async Task
+            CheckoutAsync_WhenAddressIsNotFound_ReturnsFailure()
+        {
+            var cartRepositoryMock =
+                new Mock<ICartRepository>();
+
+            var orderRepositoryMock =
+                new Mock<IOrderRepository>();
+
+            var userAddressRepositoryMock =
+                new Mock<IUserAddressRepository>();
+
+            var userManagerMock =
+                CreateUserManagerMock();
+
+            userAddressRepositoryMock
+                .Setup(repository =>
+                    repository.GetUserAddressByIdAsync(
+                        1,
+                        "user-1"))
+                .ReturnsAsync((UserAddress?)null);
+
+            var service = new CartService(
+                cartRepositoryMock.Object,
+                new Mock<IFoodItemRepository>().Object,
+                orderRepositoryMock.Object,
+                userAddressRepositoryMock.Object,
+                userManagerMock.Object);
+
+            var result =
+                await service.CheckoutAsync(
+                    CreateCheckoutDto(),
+                    "user-1");
+
+            Assert.False(result.IsSuccess);
+            Assert.Equal(
+                "The selected delivery address was not found.",
                 result.Message);
             Assert.Null(result.Order);
 
@@ -118,7 +244,8 @@ namespace FoodOrderAPI.UnitTests.Services
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task CheckoutAsync_WhenUserIsNotFound_ReturnsFailure()
+        public async Task
+            CheckoutAsync_WhenUserIsNotFound_ReturnsFailure()
         {
             var cartRepositoryMock =
                 new Mock<ICartRepository>();
@@ -126,8 +253,14 @@ namespace FoodOrderAPI.UnitTests.Services
             var orderRepositoryMock =
                 new Mock<IOrderRepository>();
 
+            var userAddressRepositoryMock =
+                new Mock<IUserAddressRepository>();
+
             var userManagerMock =
                 CreateUserManagerMock();
+
+            SetupValidAddress(
+                userAddressRepositoryMock);
 
             userManagerMock
                 .Setup(manager =>
@@ -138,10 +271,13 @@ namespace FoodOrderAPI.UnitTests.Services
                 cartRepositoryMock.Object,
                 new Mock<IFoodItemRepository>().Object,
                 orderRepositoryMock.Object,
+                userAddressRepositoryMock.Object,
                 userManagerMock.Object);
 
             var result =
-                await service.CheckoutAsync("user-1");
+                await service.CheckoutAsync(
+                    CreateCheckoutDto(),
+                    "user-1");
 
             Assert.False(result.IsSuccess);
             Assert.Equal(
@@ -168,7 +304,8 @@ namespace FoodOrderAPI.UnitTests.Services
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task CheckoutAsync_WhenProfileIsIncomplete_ReturnsFailure()
+        public async Task
+            CheckoutAsync_WhenProfileIsIncomplete_ReturnsFailure()
         {
             var cartRepositoryMock =
                 new Mock<ICartRepository>();
@@ -176,8 +313,14 @@ namespace FoodOrderAPI.UnitTests.Services
             var orderRepositoryMock =
                 new Mock<IOrderRepository>();
 
+            var userAddressRepositoryMock =
+                new Mock<IUserAddressRepository>();
+
             var userManagerMock =
                 CreateUserManagerMock();
+
+            SetupValidAddress(
+                userAddressRepositoryMock);
 
             userManagerMock
                 .Setup(manager =>
@@ -194,10 +337,13 @@ namespace FoodOrderAPI.UnitTests.Services
                 cartRepositoryMock.Object,
                 new Mock<IFoodItemRepository>().Object,
                 orderRepositoryMock.Object,
+                userAddressRepositoryMock.Object,
                 userManagerMock.Object);
 
             var result =
-                await service.CheckoutAsync("user-1");
+                await service.CheckoutAsync(
+                    CreateCheckoutDto(),
+                    "user-1");
 
             Assert.False(result.IsSuccess);
             Assert.Equal(
@@ -225,7 +371,8 @@ namespace FoodOrderAPI.UnitTests.Services
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task CheckoutAsync_WhenCartIsEmpty_ReturnsFailure()
+        public async Task
+            CheckoutAsync_WhenCartIsEmpty_ReturnsFailure()
         {
             var cartRepositoryMock =
                 new Mock<ICartRepository>();
@@ -233,8 +380,14 @@ namespace FoodOrderAPI.UnitTests.Services
             var orderRepositoryMock =
                 new Mock<IOrderRepository>();
 
+            var userAddressRepositoryMock =
+                new Mock<IUserAddressRepository>();
+
             var userManagerMock =
                 CreateUserManagerMock();
+
+            SetupValidAddress(
+                userAddressRepositoryMock);
 
             userManagerMock
                 .Setup(manager =>
@@ -250,17 +403,21 @@ namespace FoodOrderAPI.UnitTests.Services
                     {
                         Id = 25,
                         UserId = "user-1",
-                        CartItems = new List<CartItem>()
+                        CartItems =
+                            new List<CartItem>()
                     });
 
             var service = new CartService(
                 cartRepositoryMock.Object,
                 new Mock<IFoodItemRepository>().Object,
                 orderRepositoryMock.Object,
+                userAddressRepositoryMock.Object,
                 userManagerMock.Object);
 
             var result =
-                await service.CheckoutAsync("user-1");
+                await service.CheckoutAsync(
+                    CreateCheckoutDto(),
+                    "user-1");
 
             Assert.False(result.IsSuccess);
             Assert.Equal(
@@ -282,7 +439,8 @@ namespace FoodOrderAPI.UnitTests.Services
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task CheckoutAsync_WhenFoodItemDoesNotExist_ReturnsFailure()
+        public async Task
+            CheckoutAsync_WhenFoodItemDoesNotExist_ReturnsFailure()
         {
             var cartRepositoryMock =
                 new Mock<ICartRepository>();
@@ -293,8 +451,14 @@ namespace FoodOrderAPI.UnitTests.Services
             var orderRepositoryMock =
                 new Mock<IOrderRepository>();
 
+            var userAddressRepositoryMock =
+                new Mock<IUserAddressRepository>();
+
             var userManagerMock =
                 CreateUserManagerMock();
+
+            SetupValidAddress(
+                userAddressRepositoryMock);
 
             userManagerMock
                 .Setup(manager =>
@@ -319,10 +483,13 @@ namespace FoodOrderAPI.UnitTests.Services
                 cartRepositoryMock.Object,
                 foodItemRepositoryMock.Object,
                 orderRepositoryMock.Object,
+                userAddressRepositoryMock.Object,
                 userManagerMock.Object);
 
             var result =
-                await service.CheckoutAsync("user-1");
+                await service.CheckoutAsync(
+                    CreateCheckoutDto(),
+                    "user-1");
 
             Assert.False(result.IsSuccess);
             Assert.Equal(
@@ -349,7 +516,8 @@ namespace FoodOrderAPI.UnitTests.Services
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task CheckoutAsync_WhenFoodItemIsUnavailable_ReturnsFailure()
+        public async Task
+            CheckoutAsync_WhenFoodItemIsUnavailable_ReturnsFailure()
         {
             var cartRepositoryMock =
                 new Mock<ICartRepository>();
@@ -360,8 +528,14 @@ namespace FoodOrderAPI.UnitTests.Services
             var orderRepositoryMock =
                 new Mock<IOrderRepository>();
 
+            var userAddressRepositoryMock =
+                new Mock<IUserAddressRepository>();
+
             var userManagerMock =
                 CreateUserManagerMock();
+
+            SetupValidAddress(
+                userAddressRepositoryMock);
 
             userManagerMock
                 .Setup(manager =>
@@ -390,10 +564,13 @@ namespace FoodOrderAPI.UnitTests.Services
                 cartRepositoryMock.Object,
                 foodItemRepositoryMock.Object,
                 orderRepositoryMock.Object,
+                userAddressRepositoryMock.Object,
                 userManagerMock.Object);
 
             var result =
-                await service.CheckoutAsync("user-1");
+                await service.CheckoutAsync(
+                    CreateCheckoutDto(),
+                    "user-1");
 
             Assert.False(result.IsSuccess);
             Assert.Equal(
@@ -420,7 +597,8 @@ namespace FoodOrderAPI.UnitTests.Services
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task CheckoutAsync_WhenCartIsValid_CreatesOrderAndClearsCartAtomically()
+        public async Task
+            CheckoutAsync_WhenCartIsValid_CreatesOrderAndClearsCartAtomically()
         {
             var cartRepositoryMock =
                 new Mock<ICartRepository>();
@@ -431,8 +609,14 @@ namespace FoodOrderAPI.UnitTests.Services
             var orderRepositoryMock =
                 new Mock<IOrderRepository>();
 
+            var userAddressRepositoryMock =
+                new Mock<IUserAddressRepository>();
+
             var userManagerMock =
                 CreateUserManagerMock();
+
+            SetupValidAddress(
+                userAddressRepositoryMock);
 
             var firstFoodItem = new FoodItem
             {
@@ -521,6 +705,18 @@ namespace FoodOrderAPI.UnitTests.Services
                     0,
                     0,
                     DateTimeKind.Utc),
+
+                DeliveryRecipientName = "Yatheesh",
+                DeliveryPhone = "9876543210",
+                DeliveryAddressLine1 = "12, MG Road",
+                DeliveryAddressLine2 = "Apartment 4B",
+                DeliveryLandmark = "Near Metro Station",
+                DeliveryCity = "Bengaluru",
+                DeliveryState = "Karnataka",
+                DeliveryPostalCode = "560001",
+                DeliveryInstructions =
+                    "Call when you arrive.",
+
                 OrderItems = new List<OrderItem>
                 {
                     new OrderItem
@@ -549,10 +745,13 @@ namespace FoodOrderAPI.UnitTests.Services
                 cartRepositoryMock.Object,
                 foodItemRepositoryMock.Object,
                 orderRepositoryMock.Object,
+                userAddressRepositoryMock.Object,
                 userManagerMock.Object);
 
             var result =
-                await service.CheckoutAsync("user-1");
+                await service.CheckoutAsync(
+                    CreateCheckoutDto(),
+                    "user-1");
 
             Assert.True(result.IsSuccess);
             Assert.Equal(
@@ -561,24 +760,56 @@ namespace FoodOrderAPI.UnitTests.Services
 
             Assert.NotNull(result.Order);
             Assert.Equal(100, result.Order.Id);
-            Assert.Equal("Yatheesh", result.Order.CustomerName);
+            Assert.Equal(
+                "Yatheesh",
+                result.Order.CustomerName);
             Assert.Equal(
                 "9876543210",
                 result.Order.CustomerPhone);
-            Assert.Equal(480m, result.Order.TotalAmount);
-            Assert.Equal("Pending", result.Order.OrderStatus);
-            Assert.Equal(2, result.Order.Items.Count);
+            Assert.Equal(
+                480m,
+                result.Order.TotalAmount);
+            Assert.Equal(
+                "Pending",
+                result.Order.OrderStatus);
+            Assert.Equal(
+                2,
+                result.Order.Items.Count);
 
+            // Confirms that the selected saved address
+            // was copied into the order snapshot.
             orderRepositoryMock.Verify(
                 repository =>
                     repository.CreateOrderFromCartAsync(
                         It.Is<Order>(order =>
-                            order.CustomerName == "Yatheesh" &&
+                            order.CustomerName ==
+                                "Yatheesh" &&
                             order.CustomerPhone ==
                                 "9876543210" &&
-                            order.UserId == "user-1" &&
-                            order.OrderStatus == "Pending" &&
-                            order.TotalAmount == 480m &&
+                            order.UserId ==
+                                "user-1" &&
+                            order.OrderStatus ==
+                                "Pending" &&
+                            order.TotalAmount ==
+                                480m &&
+                            order.DeliveryRecipientName ==
+                                "Yatheesh" &&
+                            order.DeliveryPhone ==
+                                "9876543210" &&
+                            order.DeliveryAddressLine1 ==
+                                "12, MG Road" &&
+                            order.DeliveryAddressLine2 ==
+                                "Apartment 4B" &&
+                            order.DeliveryLandmark ==
+                                "Near Metro Station" &&
+                            order.DeliveryCity ==
+                                "Bengaluru" &&
+                            order.DeliveryState ==
+                                "Karnataka" &&
+                            order.DeliveryPostalCode ==
+                                "560001" &&
+                            order.DeliveryInstructions ==
+                                "Call when you arrive." &&
                             order.OrderItems.Count == 2 &&
                             order.OrderItems.Any(item =>
                                 item.FoodItemId == 10 &&
@@ -589,6 +820,13 @@ namespace FoodOrderAPI.UnitTests.Services
                                 item.Quantity == 1 &&
                                 item.UnitPrice == 120m)),
                         25),
+                Times.Once);
+
+            userAddressRepositoryMock.Verify(
+                repository =>
+                    repository.GetUserAddressByIdAsync(
+                        1,
+                        "user-1"),
                 Times.Once);
 
             // Checkout must use the combined repository method.
@@ -616,7 +854,8 @@ namespace FoodOrderAPI.UnitTests.Services
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task CheckoutAsync_WhenCreatedOrderCannotBeReloaded_ThrowsException()
+        public async Task
+            CheckoutAsync_WhenCreatedOrderCannotBeReloaded_ThrowsException()
         {
             var cartRepositoryMock =
                 new Mock<ICartRepository>();
@@ -627,8 +866,14 @@ namespace FoodOrderAPI.UnitTests.Services
             var orderRepositoryMock =
                 new Mock<IOrderRepository>();
 
+            var userAddressRepositoryMock =
+                new Mock<IUserAddressRepository>();
+
             var userManagerMock =
                 CreateUserManagerMock();
+
+            SetupValidAddress(
+                userAddressRepositoryMock);
 
             userManagerMock
                 .Setup(manager =>
@@ -673,12 +918,14 @@ namespace FoodOrderAPI.UnitTests.Services
                 cartRepositoryMock.Object,
                 foodItemRepositoryMock.Object,
                 orderRepositoryMock.Object,
+                userAddressRepositoryMock.Object,
                 userManagerMock.Object);
 
             var exception =
                 await Assert.ThrowsAsync<
                     InvalidOperationException>(
                     () => service.CheckoutAsync(
+                        CreateCheckoutDto(),
                         "user-1"));
 
             Assert.Equal(

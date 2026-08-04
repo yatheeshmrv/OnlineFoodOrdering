@@ -1,0 +1,578 @@
+<main class="register-page">
+  <section
+    class="register-layout"
+    aria-labelledby="register-heading"
+  >
+    <aside class="register-showcase">
+      <a
+        routerLink="/"
+        class="showcase-brand"
+        aria-label="Food Ordering homepage"
+      >
+        <span
+          class="brand-mark"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <path
+              d="M7 3v7M4.5 3v4.5A2.5 2.5 0 0 0 7 10m0 0v11M19 3v18m0-18c-2.2 0-4 2.7-4 6s1.8 5 4 5"
+            />
+          </svg>
+        </span>
+
+        <span>Food Ordering</span>
+      </a>
+
+      <div class="showcase-content">
+        <p class="showcase-eyebrow">
+          Create your customer account
+        </p>
+
+        <h2>
+          Great meals are closer than you think.
+        </h2>
+
+        <p class="showcase-description">
+          Register once to build your cart, place orders and follow
+          every meal from checkout to delivery.
+        </p>
+
+        <ul class="showcase-benefits">
+          <li>
+            <span
+              class="benefit-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+            </span>
+
+            <span>Browse available dishes and categories</span>
+          </li>
+
+          <li>
+            <span
+              class="benefit-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+            </span>
+
+            <span>Save multiple items in one convenient cart</span>
+          </li>
+
+          <li>
+            <span
+              class="benefit-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+            </span>
+
+            <span>Review previous orders and current statuses</span>
+          </li>
+        </ul>
+      </div>
+
+      <div
+        class="showcase-decoration"
+        aria-hidden="true"
+      >
+        <span class="decoration-circle decoration-circle-large"></span>
+        <span class="decoration-circle decoration-circle-small"></span>
+
+        <div class="showcase-account-card">
+          <span class="account-card-icon">
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0"
+              />
+            </svg>
+          </span>
+
+          <span>
+            <strong>Your personal account</strong>
+            <small>Simple registration and secure access</small>
+          </span>
+        </div>
+      </div>
+    </aside>
+
+    <div class="register-panel">
+      <div class="register-card">
+        <header class="register-header">
+          <p class="eyebrow">Join us</p>
+
+          <h1 id="register-heading">
+            Create an account
+          </h1>
+
+          <p class="description">
+            Enter your details below to register as a customer and
+            start ordering.
+          </p>
+        </header>
+
+        <form
+          class="register-form"
+          [formGroup]="registerForm"
+          (ngSubmit)="onSubmit()"
+          novalidate
+        >
+          <div class="form-grid">
+            <div class="form-field form-field-wide">
+              <label for="fullName">
+                Full name
+              </label>
+
+              <div
+                class="input-container"
+                [class.input-invalid]="
+                  registerForm.controls.fullName.touched &&
+                  registerForm.controls.fullName.invalid
+                "
+              >
+                <span
+                  class="input-icon"
+                  aria-hidden="true"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    focusable="false"
+                  >
+                    <path
+                      d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0"
+                    />
+                  </svg>
+                </span>
+
+                <input
+                  id="fullName"
+                  type="text"
+                  formControlName="fullName"
+                  autocomplete="name"
+                  placeholder="Enter your full name"
+                  aria-describedby="full-name-validation"
+                  [attr.aria-invalid]="
+                    registerForm.controls.fullName.touched &&
+                    registerForm.controls.fullName.invalid
+                  "
+                />
+              </div>
+
+              <div
+                id="full-name-validation"
+                class="validation-container"
+                aria-live="polite"
+              >
+                @if (
+                  registerForm.controls.fullName.touched &&
+                  registerForm.controls.fullName.hasError('required')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Full name is required.
+                  </p>
+                } @else if (
+                  registerForm.controls.fullName.touched &&
+                  registerForm.controls.fullName.hasError('maxlength')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Full name cannot exceed 100 characters.
+                  </p>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="email">
+                Email address
+              </label>
+
+              <div
+                class="input-container"
+                [class.input-invalid]="
+                  registerForm.controls.email.touched &&
+                  registerForm.controls.email.invalid
+                "
+              >
+                <span
+                  class="input-icon"
+                  aria-hidden="true"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    focusable="false"
+                  >
+                    <path
+                      d="M3 6.5h18v11H3v-11Zm1 1 8 6 8-6"
+                    />
+                  </svg>
+                </span>
+
+                <input
+                  id="email"
+                  type="email"
+                  formControlName="email"
+                  autocomplete="email"
+                  inputmode="email"
+                  spellcheck="false"
+                  placeholder="customer@example.com"
+                  aria-describedby="email-validation"
+                  [attr.aria-invalid]="
+                    registerForm.controls.email.touched &&
+                    registerForm.controls.email.invalid
+                  "
+                />
+              </div>
+
+              <div
+                id="email-validation"
+                class="validation-container"
+                aria-live="polite"
+              >
+                @if (
+                  registerForm.controls.email.touched &&
+                  registerForm.controls.email.hasError('required')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Email is required.
+                  </p>
+                } @else if (
+                  registerForm.controls.email.touched &&
+                  registerForm.controls.email.hasError('email')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Enter a valid email address.
+                  </p>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="phoneNumber">
+                Phone number
+              </label>
+
+              <div
+                class="input-container"
+                [class.input-invalid]="
+                  registerForm.controls.phoneNumber.touched &&
+                  registerForm.controls.phoneNumber.invalid
+                "
+              >
+                <span
+                  class="input-icon"
+                  aria-hidden="true"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    focusable="false"
+                  >
+                    <path
+                      d="M7 3h3l1.5 4-2 1.5a15 15 0 0 0 6 6l1.5-2L21 14v3c0 2.2-1.8 4-4 4C9.3 21 3 14.7 3 7a4 4 0 0 1 4-4Z"
+                    />
+                  </svg>
+                </span>
+
+                <input
+                  id="phoneNumber"
+                  type="tel"
+                  inputmode="numeric"
+                  maxlength="10"
+                  formControlName="phoneNumber"
+                  autocomplete="tel"
+                  placeholder="10-digit mobile number"
+                  aria-describedby="phone-validation"
+                  [attr.aria-invalid]="
+                    registerForm.controls.phoneNumber.touched &&
+                    registerForm.controls.phoneNumber.invalid
+                  "
+                />
+              </div>
+
+              <div
+                id="phone-validation"
+                class="validation-container"
+                aria-live="polite"
+              >
+                @if (
+                  registerForm.controls.phoneNumber.touched &&
+                  registerForm.controls.phoneNumber.hasError('required')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Phone number is required.
+                  </p>
+                } @else if (
+                  registerForm.controls.phoneNumber.touched &&
+                  registerForm.controls.phoneNumber.hasError('pattern')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Enter a valid 10-digit Indian mobile number.
+                  </p>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="password">
+                Password
+              </label>
+
+              <div
+                class="input-container"
+                [class.input-invalid]="
+                  registerForm.controls.password.touched &&
+                  registerForm.controls.password.invalid
+                "
+              >
+                <span
+                  class="input-icon"
+                  aria-hidden="true"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    focusable="false"
+                  >
+                    <path
+                      d="M6 10h12v10H6V10Zm3 0V7a3 3 0 0 1 6 0v3"
+                    />
+                  </svg>
+                </span>
+
+                <input
+                  id="password"
+                  type="password"
+                  formControlName="password"
+                  autocomplete="new-password"
+                  placeholder="Create a password"
+                  aria-describedby="password-validation password-guidance"
+                  [attr.aria-invalid]="
+                    registerForm.controls.password.touched &&
+                    registerForm.controls.password.invalid
+                  "
+                />
+              </div>
+
+              <p
+                id="password-guidance"
+                class="field-guidance"
+              >
+                Use uppercase, lowercase and at least one number.
+              </p>
+
+              <div
+                id="password-validation"
+                class="validation-container"
+                aria-live="polite"
+              >
+                @if (
+                  registerForm.controls.password.touched &&
+                  registerForm.controls.password.hasError('required')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Password is required.
+                  </p>
+                } @else if (
+                  registerForm.controls.password.touched &&
+                  registerForm.controls.password.hasError('minlength')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Password must contain at least 6 characters.
+                  </p>
+                } @else if (
+                  registerForm.controls.password.touched &&
+                  registerForm.controls.password.hasError('maxlength')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Password cannot exceed 100 characters.
+                  </p>
+                } @else if (
+                  registerForm.controls.password.touched &&
+                  registerForm.controls.password.hasError('pattern')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Include at least one lowercase letter, uppercase
+                    letter and number.
+                  </p>
+                }
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="confirmPassword">
+                Confirm password
+              </label>
+
+              <div
+                class="input-container"
+                [class.input-invalid]="
+                  registerForm.controls.confirmPassword.touched &&
+                  (
+                    registerForm.controls.confirmPassword.invalid ||
+                    registerForm.hasError('passwordsMismatch')
+                  )
+                "
+              >
+                <span
+                  class="input-icon"
+                  aria-hidden="true"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    focusable="false"
+                  >
+                    <path
+                      d="M6 10h12v10H6V10Zm3 0V7a3 3 0 0 1 6 0v3m1 5-3 3-2-2"
+                    />
+                  </svg>
+                </span>
+
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  formControlName="confirmPassword"
+                  autocomplete="new-password"
+                  placeholder="Enter the password again"
+                  aria-describedby="confirm-password-validation"
+                  [attr.aria-invalid]="
+                    registerForm.controls.confirmPassword.touched &&
+                    (
+                      registerForm.controls.confirmPassword.invalid ||
+                      registerForm.hasError('passwordsMismatch')
+                    )
+                  "
+                />
+              </div>
+
+              <div
+                id="confirm-password-validation"
+                class="validation-container"
+                aria-live="polite"
+              >
+                @if (
+                  registerForm.controls.confirmPassword.touched &&
+                  registerForm.controls.confirmPassword.hasError('required')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Confirm password is required.
+                  </p>
+                } @else if (
+                  registerForm.controls.confirmPassword.touched &&
+                  registerForm.hasError('passwordsMismatch')
+                ) {
+                  <p class="validation-message">
+                    <span aria-hidden="true">!</span>
+                    Password and confirm password must match.
+                  </p>
+                }
+              </div>
+            </div>
+          </div>
+
+          @if (errorMessage()) {
+            <div
+              class="form-alert form-alert-error"
+              role="alert"
+            >
+              <span
+                class="alert-icon"
+                aria-hidden="true"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  focusable="false"
+                >
+                  <path
+                    d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+                  />
+                </svg>
+              </span>
+
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
+          <button
+            class="submit-button"
+            type="submit"
+            [disabled]="isSubmitting()"
+          >
+            @if (isSubmitting()) {
+              <span
+                class="button-spinner"
+                aria-hidden="true"
+              ></span>
+
+              <span>Creating account...</span>
+            } @else {
+              <span>Create account</span>
+
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M5 12h14m-5-5 5 5-5 5" />
+              </svg>
+            }
+          </button>
+        </form>
+
+        <div class="register-footer">
+          <p class="account-prompt">
+            Already have an account?
+            <a routerLink="/login">
+              Sign in
+            </a>
+          </p>
+
+          <a
+            routerLink="/"
+            class="back-link"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+
+            <span>Return to homepage</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

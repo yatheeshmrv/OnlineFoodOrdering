@@ -20,15 +20,36 @@ namespace OnlineFoodOrdering
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Name of the CORS policy used by the Angular frontend.
+            const string AngularFrontendPolicy =
+                "AngularFrontendPolicy";
+
+            // Allows the Angular development application
+            // to call this API.
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(
+                    AngularFrontendPolicy,
+                    policy =>
+                    {
+                        policy
+                            .WithOrigins(
+                                "http://localhost:4200")
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    });
+            });
+
             // ---------------------------------------------------------
             // CONTROLLERS
             // ---------------------------------------------------------
 
-            // Registers API controllers in the dependency injection container.
+            // Registers API controllers in the dependency
+            // injection container.
             builder.Services.AddControllers();
 
             // Finds and registers all FluentValidation validators
-            // in this assembly, including both cart validators.
+            // in this assembly, including address validators.
             builder.Services
                 .AddValidatorsFromAssemblyContaining<
                     CreateOrderDtoValidator>();
@@ -37,18 +58,23 @@ namespace OnlineFoodOrdering
             // DATABASE CONFIGURATION
             // ---------------------------------------------------------
 
-            // Registers ApplicationDbContext and connects it to SQL Server
-            // using the DefaultConnection value from appsettings.json.
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(
-                    builder.Configuration.GetConnectionString(
-                        "DefaultConnection")));
+            // Registers ApplicationDbContext and connects it
+            // to SQL Server using the DefaultConnection value
+            // from appsettings.json.
+            builder.Services.AddDbContext<
+                ApplicationDbContext>(
+                    options =>
+                        options.UseSqlServer(
+                            builder.Configuration
+                                .GetConnectionString(
+                                    "DefaultConnection")));
 
             // ---------------------------------------------------------
             // REPOSITORY REGISTRATION
             // ---------------------------------------------------------
 
-            // One repository instance is created for each HTTP request.
+            // One repository instance is created
+            // for each HTTP request.
             builder.Services.AddScoped<
                 IFoodCategoryRepository,
                 FoodCategoryRepository>();
@@ -65,6 +91,12 @@ namespace OnlineFoodOrdering
             builder.Services.AddScoped<
                 ICartRepository,
                 CartRepository>();
+
+            // Registers saved delivery-address
+            // database operations.
+            builder.Services.AddScoped<
+                IUserAddressRepository,
+                UserAddressRepository>();
 
             // ---------------------------------------------------------
             // SERVICE REGISTRATION
@@ -88,32 +120,43 @@ namespace OnlineFoodOrdering
                 ICartService,
                 CartService>();
 
+            // Registers customer delivery-address
+            // business logic.
+            builder.Services.AddScoped<
+                IUserAddressService,
+                UserAddressService>();
+
             // Generates JWT tokens after a successful login.
             builder.Services.AddScoped<
                 ITokenService,
                 TokenService>();
 
-            // Registers the FluentValidation validator for LoginDto.
+            // Registers the FluentValidation validator
+            // for LoginDto.
             builder.Services.AddScoped<
                 IValidator<LoginDto>,
                 LoginDtoValidator>();
 
-            // Registers validation rules for creating food categories.
+            // Registers validation rules for creating
+            // food categories.
             builder.Services.AddScoped<
                 IValidator<CreateFoodCategoryDto>,
                 CreateFoodCategoryDtoValidator>();
 
-            // Registers validation rules for updating food categories.
+            // Registers validation rules for updating
+            // food categories.
             builder.Services.AddScoped<
                 IValidator<UpdateFoodCategoryDto>,
                 UpdateFoodCategoryDtoValidator>();
 
-            // Registers validation rules for creating food items.
+            // Registers validation rules for creating
+            // food items.
             builder.Services.AddScoped<
                 IValidator<CreateFoodItemDto>,
                 CreateFoodItemDtoValidator>();
 
-            // Registers validation rules for updating food items.
+            // Registers validation rules for updating
+            // food items.
             builder.Services.AddScoped<
                 IValidator<UpdateFoodItemDto>,
                 UpdateFoodItemDtoValidator>();
@@ -126,7 +169,8 @@ namespace OnlineFoodOrdering
             builder.Services.AddExceptionHandler<
                 GlobalExceptionHandler>();
 
-            // Enables standardized ProblemDetails error responses.
+            // Enables standardized ProblemDetails
+            // error responses.
             builder.Services.AddProblemDetails();
 
             // ---------------------------------------------------------
@@ -134,45 +178,56 @@ namespace OnlineFoodOrdering
             // ---------------------------------------------------------
 
             builder.Services
-                .AddIdentityCore<ApplicationUser>(options =>
-                {
-                    // Password requirements for registered users.
-                    options.Password.RequiredLength = 6;
-                    options.Password.RequireDigit = true;
-                    options.Password.RequireLowercase = true;
-                    options.Password.RequireUppercase = true;
+                .AddIdentityCore<ApplicationUser>(
+                    options =>
+                    {
+                        // Password requirements
+                        // for registered users.
+                        options.Password.RequiredLength = 6;
+                        options.Password.RequireDigit = true;
+                        options.Password.RequireLowercase = true;
+                        options.Password.RequireUppercase = true;
 
-                    // Special characters are not mandatory.
-                    options.Password.RequireNonAlphanumeric = false;
+                        // Special characters are not mandatory.
+                        options.Password
+                            .RequireNonAlphanumeric = false;
 
-                    // Prevents multiple accounts from using the same email.
-                    options.User.RequireUniqueEmail = true;
-                })
+                        // Prevents multiple accounts
+                        // from using the same email.
+                        options.User.RequireUniqueEmail = true;
+                    })
 
-                // Enables role-based authorization such as Admin and Customer.
+                // Enables role-based authorization
+                // such as Admin and Customer.
                 .AddRoles<IdentityRole>()
 
-                // Stores Identity users and roles in SQL Server.
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+                // Stores Identity users and roles
+                // in SQL Server.
+                .AddEntityFrameworkStores<
+                    ApplicationDbContext>()
 
-                // Adds token providers used for operations such as
-                // password reset and email confirmation.
+                // Adds token providers used for operations
+                // such as password reset and email confirmation.
                 .AddDefaultTokenProviders();
 
             // ---------------------------------------------------------
             // JWT CONFIGURATION VALUES
             // ---------------------------------------------------------
 
-            // Jwt:Key should be stored in User Secrets instead of appsettings.json.
-            var jwtKey = builder.Configuration["Jwt:Key"]
+            // Jwt:Key should be stored in User Secrets
+            // instead of appsettings.json.
+            var jwtKey =
+                builder.Configuration["Jwt:Key"]
                 ?? throw new InvalidOperationException(
                     "JWT key is missing.");
 
-            var jwtIssuer = builder.Configuration["Jwt:Issuer"]
+            var jwtIssuer =
+                builder.Configuration["Jwt:Issuer"]
                 ?? throw new InvalidOperationException(
                     "JWT issuer is missing.");
 
-            var jwtAudience = builder.Configuration["Jwt:Audience"]
+            var jwtAudience =
+                builder.Configuration["Jwt:Audience"]
                 ?? throw new InvalidOperationException(
                     "JWT audience is missing.");
 
@@ -184,14 +239,17 @@ namespace OnlineFoodOrdering
                 .AddAuthentication(options =>
                 {
                     // JWT bearer authentication is used by default
-                    // when ASP.NET Core tries to identify a user.
+                    // when ASP.NET Core identifies a user.
                     options.DefaultAuthenticateScheme =
-                        JwtBearerDefaults.AuthenticationScheme;
+                        JwtBearerDefaults
+                            .AuthenticationScheme;
 
                     // JWT bearer authentication is also used when
-                    // an unauthenticated request accesses [Authorize].
+                    // an unauthenticated request accesses
+                    // an authorized endpoint.
                     options.DefaultChallengeScheme =
-                        JwtBearerDefaults.AuthenticationScheme;
+                        JwtBearerDefaults
+                            .AuthenticationScheme;
                 })
                 .AddJwtBearer(options =>
                 {
@@ -211,14 +269,16 @@ namespace OnlineFoodOrdering
                             // Rejects expired tokens.
                             ValidateLifetime = true,
 
-                            // Confirms that the JWT signature is valid.
+                            // Confirms that the JWT signature
+                            // is valid.
                             ValidateIssuerSigningKey = true,
 
-                            // Uses the same secret key that was used
-                            // by TokenService when creating the token.
+                            // Uses the same secret key used by
+                            // TokenService when creating the token.
                             IssuerSigningKey =
                                 new SymmetricSecurityKey(
-                                    Encoding.UTF8.GetBytes(jwtKey)),
+                                    Encoding.UTF8.GetBytes(
+                                        jwtKey)),
 
                             // The token becomes invalid immediately
                             // when its expiration time is reached.
@@ -240,34 +300,45 @@ namespace OnlineFoodOrdering
             // HTTP REQUEST PIPELINE
             // ---------------------------------------------------------
 
-            // Creates the Admin and Customer roles when they do not exist.
-            using (var scope = app.Services.CreateScope())
+            // Creates the Admin and Customer roles
+            // when they do not exist.
+            using (var scope =
+                app.Services.CreateScope())
             {
-                // Roles must be created before assigning the Admin role.
+                // Roles must be created before assigning
+                // the Admin role.
                 await RoleSeeder.SeedRolesAsync(
                     scope.ServiceProvider);
 
-                // Creates the default admin account and assigns the Admin role.
+                // Creates the default admin account
+                // and assigns the Admin role.
                 await AdminSeeder.SeedAdminAsync(
                     scope.ServiceProvider,
                     builder.Configuration);
             }
 
-            // Sends unhandled exceptions to GlobalExceptionHandler.
+            // Sends unhandled exceptions
+            // to GlobalExceptionHandler.
             app.UseExceptionHandler();
 
             // Redirects HTTP requests to HTTPS.
             app.UseHttpsRedirection();
 
-            // Reads and validates the JWT from the Authorization header.
-            // This must come before UseAuthorization().
+            // Applies the Angular frontend CORS policy.
+            // It must run before authentication
+            // and authorization.
+            app.UseCors(AngularFrontendPolicy);
+
+            // Reads and validates the JWT
+            // from the Authorization header.
             app.UseAuthentication();
 
-            // Checks whether the authenticated user is allowed
-            // to access endpoints protected by [Authorize].
+            // Checks whether the authenticated user
+            // can access protected endpoints.
             app.UseAuthorization();
 
-            // Maps controller routes such as api/Auth/login.
+            // Maps controller routes
+            // such as api/Auth/login.
             app.MapControllers();
 
             // Starts the application.

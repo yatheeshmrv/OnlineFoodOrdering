@@ -17,6 +17,10 @@ namespace FoodOrderAPI.Services
         // Provides access to order-related database operations.
         private readonly IOrderRepository _orderRepository;
 
+        // Provides access to customer delivery-address operations.
+        private readonly IUserAddressRepository
+            _userAddressRepository;
+
         // Provides access to registered Identity users.
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -26,6 +30,7 @@ namespace FoodOrderAPI.Services
             ICartRepository cartRepository,
             IFoodItemRepository foodItemRepository,
             IOrderRepository orderRepository,
+            IUserAddressRepository userAddressRepository,
             UserManager<ApplicationUser> userManager)
         {
             // Stores the cart repository.
@@ -36,6 +41,9 @@ namespace FoodOrderAPI.Services
 
             // Stores the order repository.
             _orderRepository = orderRepository;
+
+            // Stores the saved-address repository.
+            _userAddressRepository = userAddressRepository;
 
             // Stores UserManager for retrieving registered users.
             _userManager = userManager;
@@ -330,8 +338,9 @@ namespace FoodOrderAPI.Services
         // ---------------------------------------------------------
 
         // Converts the logged-in customer's current cart
-        // into a new order.
+        // into a new order using their selected saved address.
         public async Task<CreateOrderResponseDto> CheckoutAsync(
+            CheckoutDto checkoutDto,
             string userId)
         {
             // Prevents checkout without an authenticated user ID.
@@ -341,6 +350,56 @@ namespace FoodOrderAPI.Services
                 {
                     IsSuccess = false,
                     Message = "Authenticated user ID is missing."
+                };
+            }
+
+            // Prevents a null request from reaching
+            // the checkout business logic.
+            ArgumentNullException.ThrowIfNull(checkoutDto);
+
+            // Keeps direct service calls safe even when they
+            // do not pass through FluentValidation.
+            if (checkoutDto.UserAddressId <= 0)
+            {
+                return new CreateOrderResponseDto
+                {
+                    IsSuccess = false,
+                    Message =
+                        "A valid delivery address must be selected."
+                };
+            }
+
+            // Prevents delivery instructions that exceed
+            // the database column limit.
+            if (checkoutDto.DeliveryInstructions?.Length > 500)
+            {
+                return new CreateOrderResponseDto
+                {
+                    IsSuccess = false,
+                    Message =
+                        "Delivery instructions cannot exceed " +
+                        "500 characters."
+                };
+            }
+
+            // Retrieves the selected address while also checking
+            // that it belongs to the authenticated customer.
+            var deliveryAddress =
+                await _userAddressRepository
+                    .GetUserAddressByIdAsync(
+                        checkoutDto.UserAddressId,
+                        userId);
+
+            // Prevents checkout with an address that does not exist
+            // or belongs to another customer.
+            if (deliveryAddress == null)
+            {
+                return new CreateOrderResponseDto
+                {
+                    IsSuccess = false,
+                    Message =
+                        "The selected delivery address " +
+                        "was not found."
                 };
             }
 
@@ -399,8 +458,8 @@ namespace FoodOrderAPI.Services
                 };
             }
 
-            // Creates the initial order using customer details
-            // from the registered account.
+            // Creates the initial order using account details
+            // and an immutable snapshot of the selected address.
             var order = new Order
             {
                 CustomerName = customerName,
@@ -413,7 +472,38 @@ namespace FoodOrderAPI.Services
                 OrderDate = DateTime.UtcNow,
 
                 // Links the order to the authenticated customer.
-                UserId = userId
+                UserId = userId,
+
+                // Copies the delivery address into the order.
+                // Later changes to the saved address will not
+                // modify this historical order.
+                DeliveryRecipientName =
+                    deliveryAddress.RecipientName,
+
+                DeliveryPhone =
+                    deliveryAddress.RecipientPhone,
+
+                DeliveryAddressLine1 =
+                    deliveryAddress.AddressLine1,
+
+                DeliveryAddressLine2 =
+                    deliveryAddress.AddressLine2,
+
+                DeliveryLandmark =
+                    deliveryAddress.Landmark,
+
+                DeliveryCity =
+                    deliveryAddress.City,
+
+                DeliveryState =
+                    deliveryAddress.State,
+
+                DeliveryPostalCode =
+                    deliveryAddress.PostalCode,
+
+                DeliveryInstructions =
+                    NormalizeOptionalText(
+                        checkoutDto.DeliveryInstructions)
             };
 
             // Rechecks every food item at checkout time.
@@ -503,7 +593,8 @@ namespace FoodOrderAPI.Services
         // ---------------------------------------------------------
 
         // Ensures that the authenticated user's ID is available.
-        private static void ValidateUserId(string userId)
+        private static void ValidateUserId(
+            string userId)
         {
             if (string.IsNullOrWhiteSpace(userId))
             {
@@ -511,6 +602,20 @@ namespace FoodOrderAPI.Services
                     "User ID is required.",
                     nameof(userId));
             }
+        }
+
+        // ---------------------------------------------------------
+        // NORMALIZE OPTIONAL TEXT
+        // ---------------------------------------------------------
+
+        // Converts empty delivery instructions to null
+        // and removes surrounding whitespace.
+        private static string? NormalizeOptionalText(
+            string? value)
+        {
+            return string.IsNullOrWhiteSpace(value)
+                ? null
+                : value.Trim();
         }
 
         // ---------------------------------------------------------
@@ -566,6 +671,7 @@ namespace FoodOrderAPI.Services
         // ---------------------------------------------------------
 
         // Converts an Order entity into an OrderDto response.
+        // Converts an Order entity into an OrderDto response.
         private static OrderDto MapOrder(Order order)
         {
             return new OrderDto
@@ -577,6 +683,34 @@ namespace FoodOrderAPI.Services
                 TotalAmount = order.TotalAmount,
                 OrderStatus = order.OrderStatus,
                 OrderDate = order.OrderDate,
+
+                // Maps the immutable delivery-address snapshot.
+                DeliveryRecipientName =
+                    order.DeliveryRecipientName,
+
+                DeliveryPhone =
+                    order.DeliveryPhone,
+
+                DeliveryAddressLine1 =
+                    order.DeliveryAddressLine1,
+
+                DeliveryAddressLine2 =
+                    order.DeliveryAddressLine2,
+
+                DeliveryLandmark =
+                    order.DeliveryLandmark,
+
+                DeliveryCity =
+                    order.DeliveryCity,
+
+                DeliveryState =
+                    order.DeliveryState,
+
+                DeliveryPostalCode =
+                    order.DeliveryPostalCode,
+
+                DeliveryInstructions =
+                    order.DeliveryInstructions,
 
                 // Converts each OrderItem into an OrderItemDto.
                 Items = order.OrderItems

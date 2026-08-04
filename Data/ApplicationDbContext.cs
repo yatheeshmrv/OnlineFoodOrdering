@@ -34,12 +34,15 @@ namespace FoodOrderAPI.Data
         // Represents the CartItems table.
         public DbSet<CartItem> CartItems { get; set; }
 
-        // Configures relationships, decimal columns and seed data.
+        // Represents reusable delivery addresses saved by customers.
+        public DbSet<UserAddress> UserAddresses { get; set; }
+
+        // Configures relationships, columns, indexes and seed data.
         protected override void OnModelCreating(
             ModelBuilder modelBuilder)
         {
             // Applies the default ASP.NET Core Identity configuration.
-            // This must be called before adding our custom configurations.
+            // This must be called before adding custom configurations.
             base.OnModelCreating(modelBuilder);
 
             // ---------------------------------------------------------
@@ -55,11 +58,140 @@ namespace FoodOrderAPI.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             // ---------------------------------------------------------
+            // APPLICATION USER AND SAVED ADDRESS RELATIONSHIP
+            // ---------------------------------------------------------
+
+            // One registered customer can save many delivery addresses.
+            // UserAddress.UserId is connected to AspNetUsers.Id.
+            //
+            // Deleting the user also deletes all saved addresses.
+            // Historical Order address snapshots remain unchanged.
+            modelBuilder.Entity<UserAddress>()
+                .HasOne(address => address.User)
+                .WithMany(user => user.UserAddresses)
+                .HasForeignKey(address => address.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Speeds up queries that retrieve all addresses belonging
+            // to the currently authenticated customer.
+            modelBuilder.Entity<UserAddress>()
+                .HasIndex(address => address.UserId)
+                .HasDatabaseName("IX_UserAddresses_UserId");
+
+            // Allows only one address with IsDefault = true per user.
+            //
+            // Multiple non-default addresses are still allowed because
+            // this unique index includes only rows where IsDefault is true.
+            modelBuilder.Entity<UserAddress>()
+                .HasIndex(address => new
+                {
+                    address.UserId,
+                    address.IsDefault
+                })
+                .IsUnique()
+                .HasFilter("[IsDefault] = 1")
+                .HasDatabaseName(
+                    "UX_UserAddresses_UserId_Default");
+
+            // ---------------------------------------------------------
+            // SAVED ADDRESS COLUMN CONFIGURATION
+            // ---------------------------------------------------------
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.UserId)
+                .IsRequired()
+                .HasMaxLength(450);
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.AddressLabel)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.RecipientName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.RecipientPhone)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.AddressLine1)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.AddressLine2)
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.Landmark)
+                .HasMaxLength(150);
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.City)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.State)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<UserAddress>()
+                .Property(address => address.PostalCode)
+                .IsRequired()
+                .HasMaxLength(10);
+
+            // ---------------------------------------------------------
+            // ORDER DELIVERY-ADDRESS SNAPSHOT CONFIGURATION
+            // ---------------------------------------------------------
+
+            // These fields remain nullable so existing historical
+            // orders can be retained after the migration.
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DeliveryRecipientName)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DeliveryPhone)
+                .HasMaxLength(20);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DeliveryAddressLine1)
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DeliveryAddressLine2)
+                .HasMaxLength(200);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DeliveryLandmark)
+                .HasMaxLength(150);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DeliveryCity)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DeliveryState)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DeliveryPostalCode)
+                .HasMaxLength(10);
+
+            modelBuilder.Entity<Order>()
+                .Property(order => order.DeliveryInstructions)
+                .HasMaxLength(500);
+
+            // ---------------------------------------------------------
             // ORDER AND ORDER ITEM RELATIONSHIP
             // ---------------------------------------------------------
 
             // One Order can contain many OrderItems.
-            // OrderItem.OrderId is the foreign key.
             // Deleting an order also deletes its order items.
             modelBuilder.Entity<OrderItem>()
                 .HasOne(orderItem => orderItem.Order)
@@ -71,8 +203,8 @@ namespace FoodOrderAPI.Data
             // FOOD ITEM AND ORDER ITEM RELATIONSHIP
             // ---------------------------------------------------------
 
-            // One FoodItem can appear in many OrderItems.
-            // OrderItem.FoodItemId is the foreign key.
+            // Restrict prevents deleting a FoodItem that is referenced
+            // by an existing historical OrderItem.
             modelBuilder.Entity<OrderItem>()
                 .HasOne(orderItem => orderItem.FoodItem)
                 .WithMany()
@@ -84,7 +216,6 @@ namespace FoodOrderAPI.Data
             // ---------------------------------------------------------
 
             // One FoodCategory can contain many FoodItems.
-            // FoodItem.FoodCategoryId is the foreign key.
             modelBuilder.Entity<FoodItem>()
                 .HasOne(foodItem => foodItem.FoodCategory)
                 .WithMany()
@@ -96,18 +227,14 @@ namespace FoodOrderAPI.Data
             // ---------------------------------------------------------
 
             // One registered user can have only one shopping cart.
-            // Cart.UserId is the foreign key connected to AspNetUsers.Id.
-            //
-            // Deleting a user also deletes that user's cart.
             modelBuilder.Entity<Cart>()
                 .HasOne(cart => cart.User)
                 .WithOne(user => user.Cart)
                 .HasForeignKey<Cart>(cart => cart.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Creates a unique database index on UserId.
-            // This provides an additional database-level guarantee
-            // that one user cannot have multiple carts.
+            // Database-level guarantee that a user cannot have
+            // multiple shopping carts.
             modelBuilder.Entity<Cart>()
                 .HasIndex(cart => cart.UserId)
                 .IsUnique();
@@ -117,10 +244,7 @@ namespace FoodOrderAPI.Data
             // ---------------------------------------------------------
 
             // One Cart can contain many CartItems.
-            // CartItem.CartId is the foreign key.
-            //
-            // Deleting or clearing a cart record also deletes
-            // all CartItems belonging to it.
+            // Deleting a cart also deletes its CartItems.
             modelBuilder.Entity<CartItem>()
                 .HasOne(cartItem => cartItem.Cart)
                 .WithMany(cart => cart.CartItems)
@@ -131,22 +255,16 @@ namespace FoodOrderAPI.Data
             // FOOD ITEM AND CART ITEM RELATIONSHIP
             // ---------------------------------------------------------
 
-            // One FoodItem can appear in multiple customer carts.
-            // CartItem.FoodItemId is the foreign key.
-            //
-            // Restrict prevents deletion of a FoodItem while it is
-            // still referenced by any customer's cart.
+            // Prevents deleting a FoodItem while it is still referenced
+            // by any customer's shopping cart.
             modelBuilder.Entity<CartItem>()
                 .HasOne(cartItem => cartItem.FoodItem)
                 .WithMany()
                 .HasForeignKey(cartItem => cartItem.FoodItemId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Prevents the same FoodItem from being stored as multiple
-            // CartItem rows inside the same cart.
-            //
-            // When the same food item is added again, its Quantity
-            // will be increased by the service instead.
+            // Prevents duplicate rows for the same food item inside
+            // one shopping cart.
             modelBuilder.Entity<CartItem>()
                 .HasIndex(cartItem => new
                 {
@@ -159,17 +277,14 @@ namespace FoodOrderAPI.Data
             // DECIMAL COLUMN CONFIGURATION
             // ---------------------------------------------------------
 
-            // Stores OrderItem.UnitPrice with two decimal places.
             modelBuilder.Entity<OrderItem>()
                 .Property(orderItem => orderItem.UnitPrice)
                 .HasColumnType("decimal(18,2)");
 
-            // Stores Order.TotalAmount with two decimal places.
             modelBuilder.Entity<Order>()
                 .Property(order => order.TotalAmount)
                 .HasColumnType("decimal(18,2)");
 
-            // Stores FoodItem.Price with two decimal places.
             modelBuilder.Entity<FoodItem>()
                 .Property(foodItem => foodItem.Price)
                 .HasColumnType("decimal(18,2)");

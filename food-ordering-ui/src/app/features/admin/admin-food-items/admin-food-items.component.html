@@ -1,0 +1,1359 @@
+<main class="admin-food-items-page">
+  <section
+    class="page-hero"
+    aria-labelledby="food-items-heading"
+  >
+    <div class="hero-content">
+      <a
+        class="back-link"
+        routerLink="/admin"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+
+        <span>Back to Admin Dashboard</span>
+      </a>
+
+      <div class="hero-copy">
+        <p class="eyebrow">Menu management</p>
+
+        <h1 id="food-items-heading">
+          Food Items
+        </h1>
+
+        <p class="page-description">
+          Create dishes, update menu information, manage prices and
+          control which items customers can order.
+        </p>
+      </div>
+
+      <div
+        class="hero-decoration"
+        aria-hidden="true"
+      >
+        <span class="hero-ring"></span>
+
+        <div class="hero-summary-card">
+          <span class="hero-summary-icon">
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M7 3v7M4.5 3v4.5A2.5 2.5 0 0 0 7 10m0 0v11M19 3v18m0-18c-2.2 0-4 2.7-4 6s1.8 5 4 5"
+              />
+            </svg>
+          </span>
+
+          <span>
+            <strong>Menu inventory</strong>
+            <small>Create, edit and manage availability</small>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="food-item-form-section"
+    aria-labelledby="create-food-item-heading"
+  >
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">New menu item</p>
+
+        <h2 id="create-food-item-heading">
+          Create Food Item
+        </h2>
+      </div>
+
+      <p>
+        Add a dish to the customer menu and assign it to an active
+        food category.
+      </p>
+    </div>
+
+    @if (categoryErrorMessage()) {
+      <div
+        class="form-message error-message"
+        role="alert"
+      >
+        <span
+          class="message-icon"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <path
+              d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+            />
+          </svg>
+        </span>
+
+        <div class="message-content">
+          <strong>Categories could not be loaded</strong>
+          <p>{{ categoryErrorMessage() }}</p>
+        </div>
+
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="loadActiveFoodCategories()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M20 6v5h-5M4 18v-5h5m10.2-3A8 8 0 0 0 6.4 6.4L4 9m16 6-2.4 2.6A8 8 0 0 1 4.8 15"
+            />
+          </svg>
+
+          <span>Retry categories</span>
+        </button>
+      </div>
+    }
+
+    @if (createSuccessMessage()) {
+      <div
+        class="form-message success-message"
+        role="status"
+        aria-live="polite"
+      >
+        <span
+          class="message-icon"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <path d="m5 12 4 4L19 6" />
+          </svg>
+        </span>
+
+        <div class="message-content">
+          <strong>Food item created</strong>
+          <p>{{ createSuccessMessage() }}</p>
+        </div>
+      </div>
+    }
+
+    @if (createErrorMessage()) {
+      <div
+        class="form-message error-message"
+        role="alert"
+      >
+        <span
+          class="message-icon"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <path
+              d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+            />
+          </svg>
+        </span>
+
+        <div class="message-content">
+          <strong>Food item could not be created</strong>
+          <p>{{ createErrorMessage() }}</p>
+
+          @if (createValidationErrors().length > 0) {
+            <ul class="validation-error-list">
+              @for (
+                validationError of createValidationErrors();
+                track validationError
+              ) {
+                <li>{{ validationError }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    }
+
+    <form
+      class="food-item-form"
+      [formGroup]="createFoodItemForm"
+      (ngSubmit)="submitCreateFoodItem()"
+      novalidate
+    >
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="food-item-name">
+            Food item name
+          </label>
+
+          <div
+            class="input-container"
+            [class.input-invalid]="
+              createFoodItemForm.controls.name.touched &&
+              createFoodItemForm.controls.name.invalid
+            "
+          >
+            <span
+              class="input-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path
+                  d="M7 3v7M4.5 3v4.5A2.5 2.5 0 0 0 7 10m0 0v11M19 3v18m0-18c-2.2 0-4 2.7-4 6s1.8 5 4 5"
+                />
+              </svg>
+            </span>
+
+            <input
+              id="food-item-name"
+              type="text"
+              formControlName="name"
+              maxlength="100"
+              placeholder="Example: Chicken Biryani"
+              autocomplete="off"
+              aria-describedby="food-item-name-validation"
+              [attr.aria-invalid]="
+                createFoodItemForm.controls.name.touched &&
+                createFoodItemForm.controls.name.invalid
+              "
+            />
+          </div>
+
+          <div
+            id="food-item-name-validation"
+            class="validation-container"
+            aria-live="polite"
+          >
+            @if (
+              createFoodItemForm.controls.name.touched &&
+              createFoodItemForm.controls.name.hasError('required')
+            ) {
+              <p class="validation-message">
+                <span aria-hidden="true">!</span>
+                Food item name is required.
+              </p>
+            } @else if (
+              createFoodItemForm.controls.name.touched &&
+              createFoodItemForm.controls.name.hasError('maxlength')
+            ) {
+              <p class="validation-message">
+                <span aria-hidden="true">!</span>
+                Food item name cannot exceed 100 characters.
+              </p>
+            }
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="food-item-category">
+            Category
+          </label>
+
+          <div
+            class="input-container select-container"
+            [class.input-invalid]="
+              createFoodItemForm.controls.foodCategoryId.touched &&
+              createFoodItemForm.controls.foodCategoryId.invalid
+            "
+          >
+            <span
+              class="input-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path
+                  d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+                />
+              </svg>
+            </span>
+
+            <select
+              id="food-item-category"
+              formControlName="foodCategoryId"
+              aria-describedby="food-item-category-validation"
+              [attr.aria-busy]="areCategoriesLoading()"
+              [attr.aria-invalid]="
+                createFoodItemForm.controls.foodCategoryId.touched &&
+                createFoodItemForm.controls.foodCategoryId.invalid
+              "
+            >
+              <option [ngValue]="0">
+                @if (areCategoriesLoading()) {
+                  Loading categories...
+                } @else {
+                  Select a category
+                }
+              </option>
+
+              @for (
+                category of activeFoodCategories();
+                track category.id
+              ) {
+                <option [ngValue]="category.id">
+                  {{ category.categoryName }}
+                </option>
+              }
+            </select>
+
+            <span
+              class="select-arrow"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path d="m7 10 5 5 5-5" />
+              </svg>
+            </span>
+          </div>
+
+          <div
+            id="food-item-category-validation"
+            class="validation-container"
+            aria-live="polite"
+          >
+            @if (
+              createFoodItemForm.controls.foodCategoryId.touched &&
+              createFoodItemForm.controls.foodCategoryId.invalid
+            ) {
+              <p class="validation-message">
+                <span aria-hidden="true">!</span>
+                Please select an active food category.
+              </p>
+            } @else if (
+              !areCategoriesLoading() &&
+              !categoryErrorMessage() &&
+              activeFoodCategories().length === 0
+            ) {
+              <p class="field-information">
+                No active food categories are available.
+              </p>
+            }
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="food-item-price">
+            Price
+          </label>
+
+          <div
+            class="input-container"
+            [class.input-invalid]="
+              createFoodItemForm.controls.price.touched &&
+              createFoodItemForm.controls.price.invalid
+            "
+          >
+            <span
+              class="input-icon currency-icon"
+              aria-hidden="true"
+            >
+              ₹
+            </span>
+
+            <input
+              id="food-item-price"
+              type="number"
+              formControlName="price"
+              min="1"
+              max="10000"
+              step="0.01"
+              placeholder="Example: 249.99"
+              aria-describedby="food-item-price-validation"
+              [attr.aria-invalid]="
+                createFoodItemForm.controls.price.touched &&
+                createFoodItemForm.controls.price.invalid
+              "
+            />
+          </div>
+
+          <div
+            id="food-item-price-validation"
+            class="validation-container"
+            aria-live="polite"
+          >
+            @if (
+              createFoodItemForm.controls.price.touched &&
+              createFoodItemForm.controls.price.hasError('required')
+            ) {
+              <p class="validation-message">
+                <span aria-hidden="true">!</span>
+                Price is required.
+              </p>
+            } @else if (
+              createFoodItemForm.controls.price.touched &&
+              createFoodItemForm.controls.price.hasError('min')
+            ) {
+              <p class="validation-message">
+                <span aria-hidden="true">!</span>
+                Price must be at least ₹1.
+              </p>
+            } @else if (
+              createFoodItemForm.controls.price.touched &&
+              createFoodItemForm.controls.price.hasError('max')
+            ) {
+              <p class="validation-message">
+                <span aria-hidden="true">!</span>
+                Price cannot exceed ₹10,000.
+              </p>
+            }
+          </div>
+        </div>
+
+        <div class="form-field form-field-full">
+          <label for="food-item-description">
+            Description
+          </label>
+
+          <div
+            class="textarea-container"
+            [class.input-invalid]="
+              createFoodItemForm.controls.description.touched &&
+              createFoodItemForm.controls.description.invalid
+            "
+          >
+            <textarea
+              id="food-item-description"
+              formControlName="description"
+              maxlength="250"
+              rows="4"
+              placeholder="Describe the food item and its main ingredients."
+              aria-describedby="food-item-description-validation"
+              [attr.aria-invalid]="
+                createFoodItemForm.controls.description.touched &&
+                createFoodItemForm.controls.description.invalid
+              "
+            ></textarea>
+          </div>
+
+          <div class="field-footer">
+            <div
+              id="food-item-description-validation"
+              class="validation-container"
+              aria-live="polite"
+            >
+              @if (
+                createFoodItemForm.controls.description.touched &&
+                createFoodItemForm.controls.description.hasError(
+                  'required'
+                )
+              ) {
+                <p class="validation-message">
+                  <span aria-hidden="true">!</span>
+                  Description is required.
+                </p>
+              } @else if (
+                createFoodItemForm.controls.description.touched &&
+                createFoodItemForm.controls.description.hasError(
+                  'maxlength'
+                )
+              ) {
+                <p class="validation-message">
+                  <span aria-hidden="true">!</span>
+                  Description cannot exceed 250 characters.
+                </p>
+              }
+            </div>
+
+            <span class="character-count">
+              {{
+                createFoodItemForm.controls.description.value.length
+              }}/250
+            </span>
+          </div>
+        </div>
+
+        <label class="availability-control form-field-full">
+          <input
+            type="checkbox"
+            formControlName="isAvailable"
+          />
+
+          <span
+            class="availability-switch"
+            aria-hidden="true"
+          >
+            <span></span>
+          </span>
+
+          <span class="availability-copy">
+            <strong>Available for ordering</strong>
+
+            <small>
+              Customers can see this item and add it to their cart.
+            </small>
+          </span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <p class="form-action-note">
+          All required fields must be completed before creating the
+          menu item.
+        </p>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="
+            isCreating() ||
+            areCategoriesLoading() ||
+            activeFoodCategories().length === 0
+          "
+        >
+          @if (isCreating()) {
+            <span
+              class="button-spinner"
+              aria-hidden="true"
+            ></span>
+
+            <span>Creating...</span>
+          } @else {
+            <span>Create Food Item</span>
+
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+
+  @if (isLoading()) {
+    <section
+      class="state-card loading-state"
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        class="state-icon"
+        aria-hidden="true"
+      >
+        <span class="loading-spinner"></span>
+      </span>
+
+      <div>
+        <h2>Loading food items</h2>
+
+        <p>
+          Retrieving the latest menu inventory.
+        </p>
+      </div>
+    </section>
+  } @else if (errorMessage()) {
+    <section
+      class="state-card error-state"
+      role="alert"
+    >
+      <span
+        class="state-icon"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          focusable="false"
+        >
+          <path
+            d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+          />
+        </svg>
+      </span>
+
+      <div class="state-content">
+        <h2>Food items could not be loaded</h2>
+
+        <p>{{ errorMessage() }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="retry-button"
+        (click)="loadFoodItems()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M20 6v5h-5M4 18v-5h5m10.2-3A8 8 0 0 0 6.4 6.4L4 9m16 6-2.4 2.6A8 8 0 0 1 4.8 15"
+          />
+        </svg>
+
+        <span>Try again</span>
+      </button>
+    </section>
+  } @else if (foodItems().length === 0) {
+    <section class="state-card empty-state">
+      <span
+        class="state-icon"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          focusable="false"
+        >
+          <path
+            d="M7 3v7M4.5 3v4.5A2.5 2.5 0 0 0 7 10m0 0v11M19 3v18m0-18c-2.2 0-4 2.7-4 6s1.8 5 4 5"
+          />
+        </svg>
+      </span>
+
+      <div>
+        <h2>No food items found</h2>
+
+        <p>
+          Create the first food item using the form above.
+        </p>
+      </div>
+    </section>
+  } @else {
+    <section
+      class="inventory-section"
+      aria-labelledby="inventory-heading"
+    >
+      <div class="inventory-heading">
+        <div>
+          <p class="eyebrow">Inventory</p>
+
+          <h2 id="inventory-heading">
+            Food item inventory
+          </h2>
+
+          <p class="inventory-description">
+            Review all dishes currently stored in the restaurant
+            menu.
+          </p>
+        </div>
+
+        <span class="inventory-count">
+          <strong>{{ foodItems().length }}</strong>
+          <span>
+            {{
+              foodItems().length === 1
+                ? 'food item'
+                : 'food items'
+            }}
+          </span>
+        </span>
+      </div>
+
+      @if (editSuccessMessage()) {
+        <div
+          class="form-message success-message inventory-message"
+          role="status"
+          aria-live="polite"
+        >
+          <span
+            class="message-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </span>
+
+          <div class="message-content">
+            <strong>Changes saved</strong>
+            <p>{{ editSuccessMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      @if (deleteSuccessMessage()) {
+        <div
+          class="form-message success-message inventory-message"
+          role="status"
+          aria-live="polite"
+        >
+          <span
+            class="message-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </span>
+
+          <div class="message-content">
+            <strong>Food item deleted</strong>
+            <p>{{ deleteSuccessMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      @if (deleteErrorMessage()) {
+        <div
+          class="form-message error-message inventory-message"
+          role="alert"
+        >
+          <span
+            class="message-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+              />
+            </svg>
+          </span>
+
+          <div class="message-content">
+            <strong>Food item could not be deleted</strong>
+            <p>{{ deleteErrorMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Item</th>
+              <th scope="col">Category</th>
+              <th scope="col">Price</th>
+              <th scope="col">Availability</th>
+              <th scope="col">
+                <span class="visually-hidden">
+                  Food item actions
+                </span>
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (item of foodItems(); track item.id) {
+              <tr class="food-item-row">
+                <td data-label="Item">
+                  <div class="item-details">
+                    <span
+                      class="item-icon"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        focusable="false"
+                      >
+                        <path
+                          d="M7 3v7M4.5 3v4.5A2.5 2.5 0 0 0 7 10m0 0v11M19 3v18m0-18c-2.2 0-4 2.7-4 6s1.8 5 4 5"
+                        />
+                      </svg>
+                    </span>
+
+                    <span class="item-copy">
+                      <strong>{{ item.name }}</strong>
+                      <span>{{ item.description }}</span>
+                    </span>
+                  </div>
+                </td>
+
+                <td data-label="Category">
+                  <span class="category-badge">
+                    {{ item.foodCategoryName }}
+                  </span>
+                </td>
+
+                <td
+                  class="price-cell"
+                  data-label="Price"
+                >
+                  {{
+                    item.price
+                      | currency:'INR':'symbol':'1.2-2'
+                  }}
+                </td>
+
+                <td data-label="Availability">
+                  <span
+                    class="availability-badge"
+                    [class.unavailable]="!item.isAvailable"
+                  >
+                    <span
+                      class="status-dot"
+                      aria-hidden="true"
+                    ></span>
+
+                    {{
+                      item.isAvailable
+                        ? 'Available'
+                        : 'Unavailable'
+                    }}
+                  </span>
+                </td>
+
+                <td
+                  class="actions-cell"
+                  data-label="Actions"
+                >
+                  <div class="row-actions">
+                    <button
+                      type="button"
+                      class="edit-button"
+                      [disabled]="
+                        isUpdating() ||
+                        deletingFoodItemId() !== null
+                      "
+                      [attr.aria-expanded]="
+                        editingFoodItemId() === item.id
+                      "
+                      [attr.aria-controls]="
+                        'edit-food-item-panel-' + item.id
+                      "
+                      (click)="startEditingFoodItem(item)"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path
+                          d="m4 16-.8 4.8L8 20l11-11-4-4L4 16Zm9-9 4 4"
+                        />
+                      </svg>
+
+                      <span>Edit</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      class="delete-button"
+                      [disabled]="
+                        isUpdating() ||
+                        deletingFoodItemId() !== null
+                      "
+                      [attr.aria-label]="
+                        'Delete ' + item.name
+                      "
+                      (click)="deleteFoodItem(item)"
+                    >
+                      @if (
+                        deletingFoodItemId() === item.id
+                      ) {
+                        <span
+                          class="button-spinner"
+                          aria-hidden="true"
+                        ></span>
+
+                        <span>Deleting...</span>
+                      } @else {
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          focusable="false"
+                        >
+                          <path
+                            d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"
+                          />
+                        </svg>
+
+                        <span>Delete</span>
+                      }
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              @if (editingFoodItemId() === item.id) {
+                <tr class="edit-row">
+                  <td colspan="5">
+                    <section
+                      class="inline-edit-panel"
+                      [id]="
+                        'edit-food-item-panel-' + item.id
+                      "
+                      [attr.aria-labelledby]="
+                        'edit-food-item-heading-' + item.id
+                      "
+                    >
+                      <div class="edit-form-heading">
+                        <div>
+                          <p class="eyebrow">
+                            Editing menu item
+                          </p>
+
+                          <h3
+                            [id]="
+                              'edit-food-item-heading-' + item.id
+                            "
+                          >
+                            Edit {{ item.name }}
+                          </h3>
+                        </div>
+
+                        <p>
+                          Update the item details and save your
+                          changes.
+                        </p>
+                      </div>
+
+                      @if (editErrorMessage()) {
+                        <div
+                          class="form-message error-message"
+                          role="alert"
+                        >
+                          <span
+                            class="message-icon"
+                            aria-hidden="true"
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              focusable="false"
+                            >
+                              <path
+                                d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+                              />
+                            </svg>
+                          </span>
+
+                          <div class="message-content">
+                            <strong>
+                              Changes could not be saved
+                            </strong>
+
+                            <p>{{ editErrorMessage() }}</p>
+
+                            @if (
+                              editValidationErrors().length > 0
+                            ) {
+                              <ul class="validation-error-list">
+                                @for (
+                                  validationError of
+                                    editValidationErrors();
+                                  track validationError
+                                ) {
+                                  <li>{{ validationError }}</li>
+                                }
+                              </ul>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <form
+                        class="food-item-form edit-food-item-form"
+                        [formGroup]="editFoodItemForm"
+                        (ngSubmit)="submitEditFoodItem()"
+                        novalidate
+                      >
+                        <div class="form-grid">
+                          <div class="form-field">
+                            <label
+                              [for]="
+                                'edit-food-item-name-' + item.id
+                              "
+                            >
+                              Food item name
+                            </label>
+
+                            <div
+                              class="input-container"
+                              [class.input-invalid]="
+                                editFoodItemForm.controls.name.touched &&
+                                editFoodItemForm.controls.name.invalid
+                              "
+                            >
+                              <span
+                                class="input-icon"
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  focusable="false"
+                                >
+                                  <path
+                                    d="M7 3v7M4.5 3v4.5A2.5 2.5 0 0 0 7 10m0 0v11M19 3v18m0-18c-2.2 0-4 2.7-4 6s1.8 5 4 5"
+                                  />
+                                </svg>
+                              </span>
+
+                              <input
+                                [id]="
+                                  'edit-food-item-name-' + item.id
+                                "
+                                type="text"
+                                formControlName="name"
+                                maxlength="100"
+                                autocomplete="off"
+                                [attr.aria-invalid]="
+                                  editFoodItemForm.controls.name.touched &&
+                                  editFoodItemForm.controls.name.invalid
+                                "
+                              />
+                            </div>
+
+                            <div class="validation-container">
+                              @if (
+                                editFoodItemForm.controls.name.touched &&
+                                editFoodItemForm.controls.name.hasError(
+                                  'required'
+                                )
+                              ) {
+                                <p class="validation-message">
+                                  <span aria-hidden="true">!</span>
+                                  Food item name is required.
+                                </p>
+                              } @else if (
+                                editFoodItemForm.controls.name.touched &&
+                                editFoodItemForm.controls.name.hasError(
+                                  'maxlength'
+                                )
+                              ) {
+                                <p class="validation-message">
+                                  <span aria-hidden="true">!</span>
+                                  Food item name cannot exceed
+                                  100 characters.
+                                </p>
+                              }
+                            </div>
+                          </div>
+
+                          <div class="form-field">
+                            <label
+                              [for]="
+                                'edit-food-item-category-' + item.id
+                              "
+                            >
+                              Category
+                            </label>
+
+                            <div
+                              class="input-container select-container"
+                              [class.input-invalid]="
+                                editFoodItemForm.controls
+                                  .foodCategoryId.touched &&
+                                editFoodItemForm.controls
+                                  .foodCategoryId.invalid
+                              "
+                            >
+                              <span
+                                class="input-icon"
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  focusable="false"
+                                >
+                                  <path
+                                    d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+                                  />
+                                </svg>
+                              </span>
+
+                              <select
+                                [id]="
+                                  'edit-food-item-category-' + item.id
+                                "
+                                formControlName="foodCategoryId"
+                                [attr.aria-busy]="
+                                  areCategoriesLoading()
+                                "
+                                [attr.aria-invalid]="
+                                  editFoodItemForm.controls
+                                    .foodCategoryId.touched &&
+                                  editFoodItemForm.controls
+                                    .foodCategoryId.invalid
+                                "
+                              >
+                                <option [ngValue]="0">
+                                  Select a category
+                                </option>
+
+                                @for (
+                                  category of activeFoodCategories();
+                                  track category.id
+                                ) {
+                                  <option [ngValue]="category.id">
+                                    {{ category.categoryName }}
+                                  </option>
+                                }
+                              </select>
+
+                              <span
+                                class="select-arrow"
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  focusable="false"
+                                >
+                                  <path d="m7 10 5 5 5-5" />
+                                </svg>
+                              </span>
+                            </div>
+
+                            <div class="validation-container">
+                              @if (
+                                editFoodItemForm.controls
+                                  .foodCategoryId.touched &&
+                                editFoodItemForm.controls
+                                  .foodCategoryId.invalid
+                              ) {
+                                <p class="validation-message">
+                                  <span aria-hidden="true">!</span>
+                                  Please select an active food category.
+                                </p>
+                              }
+                            </div>
+                          </div>
+
+                          <div class="form-field">
+                            <label
+                              [for]="
+                                'edit-food-item-price-' + item.id
+                              "
+                            >
+                              Price
+                            </label>
+
+                            <div
+                              class="input-container"
+                              [class.input-invalid]="
+                                editFoodItemForm.controls.price.touched &&
+                                editFoodItemForm.controls.price.invalid
+                              "
+                            >
+                              <span
+                                class="input-icon currency-icon"
+                                aria-hidden="true"
+                              >
+                                ₹
+                              </span>
+
+                              <input
+                                [id]="
+                                  'edit-food-item-price-' + item.id
+                                "
+                                type="number"
+                                formControlName="price"
+                                min="1"
+                                max="10000"
+                                step="0.01"
+                                [attr.aria-invalid]="
+                                  editFoodItemForm.controls.price.touched &&
+                                  editFoodItemForm.controls.price.invalid
+                                "
+                              />
+                            </div>
+
+                            <div class="validation-container">
+                              @if (
+                                editFoodItemForm.controls.price.touched &&
+                                editFoodItemForm.controls.price.hasError(
+                                  'required'
+                                )
+                              ) {
+                                <p class="validation-message">
+                                  <span aria-hidden="true">!</span>
+                                  Price is required.
+                                </p>
+                              } @else if (
+                                editFoodItemForm.controls.price.touched &&
+                                editFoodItemForm.controls.price.hasError(
+                                  'min'
+                                )
+                              ) {
+                                <p class="validation-message">
+                                  <span aria-hidden="true">!</span>
+                                  Price must be at least ₹1.
+                                </p>
+                              } @else if (
+                                editFoodItemForm.controls.price.touched &&
+                                editFoodItemForm.controls.price.hasError(
+                                  'max'
+                                )
+                              ) {
+                                <p class="validation-message">
+                                  <span aria-hidden="true">!</span>
+                                  Price cannot exceed ₹10,000.
+                                </p>
+                              }
+                            </div>
+                          </div>
+
+                          <div class="form-field form-field-full">
+                            <label
+                              [for]="
+                                'edit-food-item-description-' +
+                                item.id
+                              "
+                            >
+                              Description
+                            </label>
+
+                            <div
+                              class="textarea-container"
+                              [class.input-invalid]="
+                                editFoodItemForm.controls
+                                  .description.touched &&
+                                editFoodItemForm.controls
+                                  .description.invalid
+                              "
+                            >
+                              <textarea
+                                [id]="
+                                  'edit-food-item-description-' +
+                                  item.id
+                                "
+                                formControlName="description"
+                                maxlength="250"
+                                rows="4"
+                                [attr.aria-invalid]="
+                                  editFoodItemForm.controls
+                                    .description.touched &&
+                                  editFoodItemForm.controls
+                                    .description.invalid
+                                "
+                              ></textarea>
+                            </div>
+
+                            <div class="field-footer">
+                              <div class="validation-container">
+                                @if (
+                                  editFoodItemForm.controls
+                                    .description.touched &&
+                                  editFoodItemForm.controls
+                                    .description.hasError(
+                                      'required'
+                                    )
+                                ) {
+                                  <p class="validation-message">
+                                    <span aria-hidden="true">!</span>
+                                    Description is required.
+                                  </p>
+                                } @else if (
+                                  editFoodItemForm.controls
+                                    .description.touched &&
+                                  editFoodItemForm.controls
+                                    .description.hasError(
+                                      'maxlength'
+                                    )
+                                ) {
+                                  <p class="validation-message">
+                                    <span aria-hidden="true">!</span>
+                                    Description cannot exceed
+                                    250 characters.
+                                  </p>
+                                }
+                              </div>
+
+                              <span class="character-count">
+                                {{
+                                  editFoodItemForm.controls
+                                    .description.value.length
+                                }}/250
+                              </span>
+                            </div>
+                          </div>
+
+                          <label
+                            class="availability-control form-field-full"
+                          >
+                            <input
+                              type="checkbox"
+                              formControlName="isAvailable"
+                            />
+
+                            <span
+                              class="availability-switch"
+                              aria-hidden="true"
+                            >
+                              <span></span>
+                            </span>
+
+                            <span class="availability-copy">
+                              <strong>
+                                Available for ordering
+                              </strong>
+
+                              <small>
+                                Customers can see this item and add
+                                it to their cart.
+                              </small>
+                            </span>
+                          </label>
+                        </div>
+
+                        <div class="edit-form-actions">
+                          <button
+                            type="button"
+                            class="cancel-button"
+                            [disabled]="isUpdating()"
+                            (click)="cancelEditingFoodItem()"
+                          >
+                            Cancel
+                          </button>
+
+                          <button
+                            type="submit"
+                            class="primary-button"
+                            [disabled]="
+                              isUpdating() ||
+                              deletingFoodItemId() !== null ||
+                              areCategoriesLoading() ||
+                              activeFoodCategories().length === 0
+                            "
+                          >
+                            @if (isUpdating()) {
+                              <span
+                                class="button-spinner"
+                                aria-hidden="true"
+                              ></span>
+
+                              <span>Saving...</span>
+                            } @else {
+                              <span>Save Changes</span>
+
+                              <svg
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                                focusable="false"
+                              >
+                                <path d="m5 12 4 4L19 6" />
+                              </svg>
+                            }
+                          </button>
+                        </div>
+                      </form>
+                    </section>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</main>

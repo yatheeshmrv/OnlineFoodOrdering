@@ -1,0 +1,483 @@
+<main class="order-details-page">
+  <div class="order-details-container">
+    <a
+      routerLink="/my-orders"
+      class="back-link"
+    >
+      <span aria-hidden="true">←</span>
+      Back to My Orders
+    </a>
+
+    @if (isLoading()) {
+      <section
+        class="state-card loading-state"
+        role="status"
+        aria-live="polite"
+      >
+        <div
+          class="loading-spinner"
+          aria-hidden="true"
+        ></div>
+
+        <div>
+          <h1>Loading order details</h1>
+
+          <p>
+            Please wait while we retrieve your order.
+          </p>
+        </div>
+      </section>
+    } @else if (errorMessage()) {
+      <section
+        class="state-card error-state"
+        role="alert"
+      >
+        <div
+          class="state-icon"
+          aria-hidden="true"
+        >
+          !
+        </div>
+
+        <div>
+          <h1>Unable to load order</h1>
+
+          <p>
+            {{ errorMessage() }}
+          </p>
+        </div>
+
+        <div class="state-actions">
+          <button
+            type="button"
+            class="retry-button"
+            (click)="loadOrder()"
+          >
+            Try Again
+          </button>
+
+          <a
+            routerLink="/my-orders"
+            class="secondary-link"
+          >
+            View My Orders
+          </a>
+        </div>
+      </section>
+    } @else {
+      @if (order(); as selectedOrder) {
+        <!-- Order introduction -->
+        <section
+          class="order-hero"
+          aria-labelledby="order-heading"
+        >
+          <div class="order-hero-content">
+            <p class="eyebrow">
+              Order details
+            </p>
+
+            <h1 id="order-heading">
+              Order #{{ selectedOrder.id }}
+            </h1>
+
+            <p class="hero-description">
+              Review the items, customer information, order status
+              and complete amount for this purchase.
+            </p>
+
+            <div class="order-date">
+              <span
+                class="date-icon"
+                aria-hidden="true"
+              >
+                📅
+              </span>
+
+              <span>
+                Placed on
+                <strong>
+                  {{
+                    selectedOrder.orderDate
+                      | date:'medium'
+                  }}
+                </strong>
+              </span>
+            </div>
+          </div>
+
+          <div
+            class="order-hero-visual"
+            aria-hidden="true"
+          >
+            <div class="order-visual-circle">
+              <span>📦</span>
+            </div>
+
+            <div class="order-floating-card">
+              <strong>
+                Order #{{ selectedOrder.id }}
+              </strong>
+
+              <small>
+                {{ selectedOrder.items.length }}
+                {{
+                  selectedOrder.items.length === 1
+                    ? 'item purchased'
+                    : 'items purchased'
+                }}
+              </small>
+            </div>
+          </div>
+        </section>
+
+        <!-- Main order content -->
+        <section
+          class="order-content"
+          aria-labelledby="summary-heading"
+        >
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">
+                Purchase summary
+              </p>
+
+              <h2 id="summary-heading">
+                Complete order information
+              </h2>
+            </div>
+
+            <span
+              class="status-badge"
+              [class.status-pending]="
+                selectedOrder.orderStatus === 'Pending'
+              "
+              [class.status-confirmed]="
+                selectedOrder.orderStatus === 'Confirmed'
+              "
+              [class.status-preparing]="
+                selectedOrder.orderStatus === 'Preparing'
+              "
+              [class.status-out-for-delivery]="
+                selectedOrder.orderStatus ===
+                  'Out for Delivery'
+              "
+              [class.status-delivered]="
+                selectedOrder.orderStatus === 'Delivered'
+              "
+              [class.status-cancelled]="
+                selectedOrder.orderStatus === 'Cancelled'
+              "
+            >
+              {{ selectedOrder.orderStatus }}
+            </span>
+          </div>
+
+          <div class="order-layout">
+            <div class="order-main">
+              <!-- Customer information -->
+              <section
+                class="details-card customer-section"
+                aria-labelledby="customer-heading"
+              >
+                <div class="card-heading">
+                  <div
+                    class="card-icon"
+                    aria-hidden="true"
+                  >
+                    👤
+                  </div>
+
+                  <div>
+                    <p class="card-label">
+                      Customer
+                    </p>
+
+                    <h3 id="customer-heading">
+                      Contact information
+                    </h3>
+                  </div>
+                </div>
+
+                <div class="customer-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">
+                      Customer name
+                    </span>
+
+                    <strong>
+                      {{ selectedOrder.customerName }}
+                    </strong>
+                  </div>
+
+                  <div class="detail-item">
+                    <span class="detail-label">
+                      Phone number
+                    </span>
+
+                    <strong>
+                      {{ selectedOrder.customerPhone }}
+                    </strong>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Delivery address snapshot -->
+              <section
+                class="details-card delivery-section"
+                aria-labelledby="delivery-heading"
+              >
+                <div class="card-heading">
+                  <div class="card-icon" aria-hidden="true">
+                    📍
+                  </div>
+
+                  <div>
+                    <p class="card-label">
+                      Delivery
+                    </p>
+
+                    <h3 id="delivery-heading">
+                      Delivery address
+                    </h3>
+                  </div>
+                </div>
+
+                @if (selectedOrder.deliveryAddressLine1) {
+                  <div class="delivery-grid">
+                    <div class="detail-item">
+                      <span class="detail-label">
+                        Recipient
+                      </span>
+
+                      <strong>
+                        {{
+                          selectedOrder.deliveryRecipientName ||
+                          selectedOrder.customerName
+                        }}
+                      </strong>
+                    </div>
+
+                    <div class="detail-item">
+                      <span class="detail-label">
+                        Delivery phone
+                      </span>
+
+                      <strong>
+                        {{
+                          selectedOrder.deliveryPhone ||
+                          selectedOrder.customerPhone ||
+                          'Not provided'
+                        }}
+                      </strong>
+                    </div>
+
+                    <div class="detail-item delivery-address-line">
+                      <span class="detail-label">
+                        Complete address
+                      </span>
+
+                      <strong>
+                        {{ selectedOrder.deliveryAddressLine1 }}
+
+                        @if (selectedOrder.deliveryAddressLine2) {
+                          <br />
+                          {{ selectedOrder.deliveryAddressLine2 }}
+                        }
+
+                        @if (selectedOrder.deliveryLandmark) {
+                          <br />
+                          Near {{ selectedOrder.deliveryLandmark }}
+                        }
+
+                        <br />
+                        {{ selectedOrder.deliveryCity }},
+                        {{ selectedOrder.deliveryState }} -
+                        {{ selectedOrder.deliveryPostalCode }}
+                      </strong>
+                    </div>
+
+                    @if (selectedOrder.deliveryInstructions) {
+                      <div class="detail-item delivery-instructions">
+                        <span class="detail-label">
+                          Delivery instructions
+                        </span>
+
+                        <strong>
+                          {{ selectedOrder.deliveryInstructions }}
+                        </strong>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="delivery-unavailable">
+                    <strong>Address snapshot unavailable</strong>
+
+                    <p>
+                      This order was created before delivery addresses
+                      were added to checkout.
+                    </p>
+                  </div>
+                }
+              </section>
+
+              <!-- Ordered food items -->
+              <section
+                class="details-card items-section"
+                aria-labelledby="items-heading"
+              >
+                <div class="items-heading">
+                  <div class="card-heading">
+                    <div
+                      class="card-icon"
+                      aria-hidden="true"
+                    >
+                      🍽️
+                    </div>
+
+                    <div>
+                      <p class="card-label">
+                        Food items
+                      </p>
+
+                      <h3 id="items-heading">
+                        Ordered items
+                      </h3>
+                    </div>
+                  </div>
+
+                  <span class="item-count">
+                    {{ selectedOrder.items.length }}
+                    {{
+                      selectedOrder.items.length === 1
+                        ? 'item'
+                        : 'items'
+                    }}
+                  </span>
+                </div>
+
+                <div class="items-list">
+                  @for (
+                    item of selectedOrder.items;
+                    track item.foodItemId
+                  ) {
+                    <article class="order-item">
+                      <div
+                        class="item-visual"
+                        aria-hidden="true"
+                      >
+                        🍲
+                      </div>
+
+                      <div class="item-details">
+                        <h4>
+                          {{ item.foodItemName }}
+                        </h4>
+
+                        <p>
+                          {{
+                            item.unitPrice
+                              | currency:'INR':'symbol':'1.2-2'
+                          }}
+                          × {{ item.quantity }}
+                        </p>
+                      </div>
+
+                      <div class="item-subtotal">
+                        <span>
+                          Subtotal
+                        </span>
+
+                        <strong>
+                          {{
+                            item.unitPrice * item.quantity
+                              | currency:'INR':'symbol':'1.2-2'
+                          }}
+                        </strong>
+                      </div>
+                    </article>
+                  }
+                </div>
+              </section>
+            </div>
+
+            <!-- Order total and status -->
+            <aside
+              class="order-summary"
+              aria-labelledby="total-heading"
+            >
+              <div class="summary-heading">
+                <p class="eyebrow">
+                  Summary
+                </p>
+
+                <h2 id="total-heading">
+                  Order total
+                </h2>
+              </div>
+
+              <div class="summary-details">
+                <div class="summary-row">
+                  <span>
+                    Order number
+                  </span>
+
+                  <strong>
+                    #{{ selectedOrder.id }}
+                  </strong>
+                </div>
+
+                <div class="summary-row">
+                  <span>
+                    Total items
+                  </span>
+
+                  <strong>
+                    {{ selectedOrder.items.length }}
+                  </strong>
+                </div>
+
+                <div class="summary-row">
+                  <span>
+                    Current status
+                  </span>
+
+                  <strong>
+                    {{ selectedOrder.orderStatus }}
+                  </strong>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="summary-row total-row">
+                  <span>
+                    Total amount
+                  </span>
+
+                  <strong>
+                    {{
+                      selectedOrder.totalAmount
+                        | currency:'INR':'symbol':'1.2-2'
+                    }}
+                  </strong>
+                </div>
+              </div>
+
+              <a
+                routerLink="/my-orders"
+                class="orders-link"
+              >
+                View All Orders
+                <span aria-hidden="true">→</span>
+              </a>
+
+              <p class="summary-note">
+                Prices shown are the values recorded when the order
+                was placed.
+              </p>
+            </aside>
+          </div>
+        </section>
+      }
+    }
+  </div>
+</main>

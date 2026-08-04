@@ -1,0 +1,844 @@
+<main class="admin-food-categories-page">
+  <section
+    class="page-hero"
+    aria-labelledby="food-categories-heading"
+  >
+    <div class="hero-content">
+      <a
+        class="back-link"
+        routerLink="/admin"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+
+        <span>Back to Admin Dashboard</span>
+      </a>
+
+      <div class="hero-copy">
+        <p class="eyebrow">Menu organisation</p>
+
+        <h1 id="food-categories-heading">
+          Food Categories
+        </h1>
+
+        <p class="page-description">
+          Create and manage the categories used to organise dishes
+          throughout the customer menu.
+        </p>
+      </div>
+
+      <div
+        class="hero-decoration"
+        aria-hidden="true"
+      >
+        <span class="hero-ring"></span>
+
+        <div class="hero-summary-card">
+          <span class="hero-summary-icon">
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+              />
+            </svg>
+          </span>
+
+          <span>
+            <strong>Category organisation</strong>
+            <small>Create, edit and manage category status</small>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="category-form-section"
+    aria-labelledby="create-category-heading"
+  >
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">New category</p>
+
+        <h2 id="create-category-heading">
+          Create Food Category
+        </h2>
+      </div>
+
+      <p>
+        Active categories become available while creating and
+        editing food items.
+      </p>
+    </div>
+
+    @if (createSuccessMessage()) {
+      <div
+        class="form-message success-message"
+        role="status"
+        aria-live="polite"
+      >
+        <span
+          class="message-icon"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <path d="m5 12 4 4L19 6" />
+          </svg>
+        </span>
+
+        <div class="message-content">
+          <strong>Category created</strong>
+          <p>{{ createSuccessMessage() }}</p>
+        </div>
+      </div>
+    }
+
+    @if (createErrorMessage()) {
+      <div
+        class="form-message error-message"
+        role="alert"
+      >
+        <span
+          class="message-icon"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <path
+              d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+            />
+          </svg>
+        </span>
+
+        <div class="message-content">
+          <strong>Category could not be created</strong>
+
+          <p>{{ createErrorMessage() }}</p>
+
+          @if (createValidationErrors().length > 0) {
+            <ul class="validation-error-list">
+              @for (
+                validationError of createValidationErrors();
+                track $index
+              ) {
+                <li>{{ validationError }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+    }
+
+    <form
+      class="category-form"
+      [formGroup]="createFoodCategoryForm"
+      (ngSubmit)="submitCreateFoodCategory()"
+      novalidate
+    >
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="category-name">
+            Category name
+          </label>
+
+          <div
+            class="input-container"
+            [class.input-invalid]="
+              createFoodCategoryForm.controls.categoryName.touched &&
+              createFoodCategoryForm.controls.categoryName.invalid
+            "
+          >
+            <span
+              class="input-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path
+                  d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+                />
+              </svg>
+            </span>
+
+            <input
+              id="category-name"
+              type="text"
+              formControlName="categoryName"
+              maxlength="100"
+              placeholder="Example: Main Course"
+              autocomplete="off"
+              aria-describedby="category-name-validation"
+              [attr.aria-invalid]="
+                createFoodCategoryForm.controls.categoryName.touched &&
+                createFoodCategoryForm.controls.categoryName.invalid
+              "
+            />
+          </div>
+
+          <div
+            id="category-name-validation"
+            class="validation-container"
+            aria-live="polite"
+          >
+            @if (
+              createFoodCategoryForm.controls.categoryName.touched &&
+              createFoodCategoryForm.controls.categoryName.hasError(
+                'required'
+              )
+            ) {
+              <p class="validation-message">
+                <span aria-hidden="true">!</span>
+                Category name is required.
+              </p>
+            } @else if (
+              createFoodCategoryForm.controls.categoryName.touched &&
+              createFoodCategoryForm.controls.categoryName.hasError(
+                'maxlength'
+              )
+            ) {
+              <p class="validation-message">
+                <span aria-hidden="true">!</span>
+                Category name cannot exceed 100 characters.
+              </p>
+            }
+          </div>
+        </div>
+
+        <label class="status-control">
+          <input
+            type="checkbox"
+            formControlName="isActive"
+          />
+
+          <span
+            class="status-switch"
+            aria-hidden="true"
+          >
+            <span></span>
+          </span>
+
+          <span class="status-copy">
+            <strong>Active category</strong>
+
+            <small>
+              Active categories can be assigned to food items.
+            </small>
+          </span>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <p class="form-action-note">
+          A category name is required before the category can be
+          created.
+        </p>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="isMutationInProgress()"
+        >
+          @if (isCreating()) {
+            <span
+              class="button-spinner"
+              aria-hidden="true"
+            ></span>
+
+            <span>Creating...</span>
+          } @else {
+            <span>Create Category</span>
+
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+
+  @if (isLoading()) {
+    <section
+      class="state-card loading-state"
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        class="state-icon"
+        aria-hidden="true"
+      >
+        <span class="loading-spinner"></span>
+      </span>
+
+      <div>
+        <h2>Loading food categories</h2>
+
+        <p>
+          Retrieving the latest category inventory.
+        </p>
+      </div>
+    </section>
+  } @else if (loadErrorMessage()) {
+    <section
+      class="state-card error-state"
+      role="alert"
+    >
+      <span
+        class="state-icon"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          focusable="false"
+        >
+          <path
+            d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+          />
+        </svg>
+      </span>
+
+      <div class="state-content">
+        <h2>Food categories could not be loaded</h2>
+
+        <p>{{ loadErrorMessage() }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="retry-button"
+        (click)="loadFoodCategories()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M20 6v5h-5M4 18v-5h5m10.2-3A8 8 0 0 0 6.4 6.4L4 9m16 6-2.4 2.6A8 8 0 0 1 4.8 15"
+          />
+        </svg>
+
+        <span>Try again</span>
+      </button>
+    </section>
+  } @else if (foodCategories().length === 0) {
+    <section class="state-card empty-state">
+      <span
+        class="state-icon"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          focusable="false"
+        >
+          <path
+            d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+          />
+        </svg>
+      </span>
+
+      <div>
+        <h2>No food categories found</h2>
+
+        <p>
+          Create the first category using the form above.
+        </p>
+      </div>
+    </section>
+  } @else {
+    <section
+      class="inventory-section"
+      aria-labelledby="category-inventory-heading"
+    >
+      <div class="inventory-heading">
+        <div>
+          <p class="eyebrow">Category inventory</p>
+
+          <h2 id="category-inventory-heading">
+            Food category inventory
+          </h2>
+
+          <p class="inventory-description">
+            Review category names, availability and administrative
+            actions.
+          </p>
+        </div>
+
+        <span class="inventory-count">
+          <strong>{{ foodCategories().length }}</strong>
+
+          <span>
+            {{
+              foodCategories().length === 1
+                ? 'category'
+                : 'categories'
+            }}
+          </span>
+        </span>
+      </div>
+
+      @if (editSuccessMessage()) {
+        <div
+          class="form-message success-message inventory-message"
+          role="status"
+          aria-live="polite"
+        >
+          <span
+            class="message-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </span>
+
+          <div class="message-content">
+            <strong>Changes saved</strong>
+            <p>{{ editSuccessMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      @if (deleteSuccessMessage()) {
+        <div
+          class="form-message success-message inventory-message"
+          role="status"
+          aria-live="polite"
+        >
+          <span
+            class="message-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </span>
+
+          <div class="message-content">
+            <strong>Category deleted</strong>
+            <p>{{ deleteSuccessMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      @if (deleteErrorMessage()) {
+        <div
+          class="form-message error-message inventory-message"
+          role="alert"
+        >
+          <span
+            class="message-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+              />
+            </svg>
+          </span>
+
+          <div class="message-content">
+            <strong>Category could not be deleted</strong>
+            <p>{{ deleteErrorMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Category</th>
+              <th scope="col">Status</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (
+              category of foodCategories();
+              track category.id
+            ) {
+              <tr class="category-row">
+                <td data-label="Category">
+                  <div class="category-details">
+                    <span
+                      class="category-icon"
+                      aria-hidden="true"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        focusable="false"
+                      >
+                        <path
+                          d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+                        />
+                      </svg>
+                    </span>
+
+                    <span class="category-copy">
+                      <strong>
+                        {{ category.categoryName }}
+                      </strong>
+
+                      <span>
+                        Category ID: {{ category.id }}
+                      </span>
+                    </span>
+                  </div>
+                </td>
+
+                <td data-label="Status">
+                  <span
+                    class="status-badge"
+                    [class.inactive]="!category.isActive"
+                  >
+                    <span
+                      class="status-dot"
+                      aria-hidden="true"
+                    ></span>
+
+                    {{
+                      category.isActive
+                        ? 'Active'
+                        : 'Inactive'
+                    }}
+                  </span>
+                </td>
+
+                <td
+                  class="actions-cell"
+                  data-label="Actions"
+                >
+                  <div class="row-actions">
+                    <button
+                      type="button"
+                      class="edit-button"
+                      [disabled]="isMutationInProgress()"
+                      [attr.aria-expanded]="
+                        editingFoodCategoryId() === category.id
+                      "
+                      [attr.aria-controls]="
+                        'edit-category-panel-' + category.id
+                      "
+                      (click)="
+                        startEditingFoodCategory(category)
+                      "
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path
+                          d="m4 16-.8 4.8L8 20l11-11-4-4L4 16Zm9-9 4 4"
+                        />
+                      </svg>
+
+                      <span>Edit</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      class="delete-button"
+                      [disabled]="isMutationInProgress()"
+                      [attr.aria-label]="
+                        'Delete ' + category.categoryName
+                      "
+                      (click)="deleteFoodCategory(category)"
+                    >
+                      @if (
+                        deletingFoodCategoryId() === category.id
+                      ) {
+                        <span
+                          class="button-spinner"
+                          aria-hidden="true"
+                        ></span>
+
+                        <span>Deleting...</span>
+                      } @else {
+                        <svg
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                          focusable="false"
+                        >
+                          <path
+                            d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5"
+                          />
+                        </svg>
+
+                        <span>Delete</span>
+                      }
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              @if (
+                editingFoodCategoryId() === category.id
+              ) {
+                <tr class="edit-row">
+                  <td colspan="3">
+                    <section
+                      class="inline-edit-panel"
+                      [id]="
+                        'edit-category-panel-' + category.id
+                      "
+                      [attr.aria-labelledby]="
+                        'edit-category-heading-' + category.id
+                      "
+                    >
+                      <div class="edit-form-heading">
+                        <div>
+                          <p class="eyebrow">
+                            Editing category
+                          </p>
+
+                          <h3
+                            [id]="
+                              'edit-category-heading-' +
+                              category.id
+                            "
+                          >
+                            Edit {{ category.categoryName }}
+                          </h3>
+                        </div>
+
+                        <p>
+                          Update the category name or change whether
+                          it can be assigned to food items.
+                        </p>
+                      </div>
+
+                      @if (editErrorMessage()) {
+                        <div
+                          class="form-message error-message"
+                          role="alert"
+                        >
+                          <span
+                            class="message-icon"
+                            aria-hidden="true"
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              focusable="false"
+                            >
+                              <path
+                                d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+                              />
+                            </svg>
+                          </span>
+
+                          <div class="message-content">
+                            <strong>
+                              Changes could not be saved
+                            </strong>
+
+                            <p>{{ editErrorMessage() }}</p>
+
+                            @if (
+                              editValidationErrors().length > 0
+                            ) {
+                              <ul class="validation-error-list">
+                                @for (
+                                  validationError of
+                                    editValidationErrors();
+                                  track $index
+                                ) {
+                                  <li>{{ validationError }}</li>
+                                }
+                              </ul>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <form
+                        class="category-form edit-category-form"
+                        [formGroup]="editFoodCategoryForm"
+                        (ngSubmit)="submitEditFoodCategory()"
+                        novalidate
+                      >
+                        <div class="form-grid">
+                          <div class="form-field">
+                            <label
+                              [for]="
+                                'edit-category-name-' +
+                                category.id
+                              "
+                            >
+                              Category name
+                            </label>
+
+                            <div
+                              class="input-container"
+                              [class.input-invalid]="
+                                editFoodCategoryForm.controls
+                                  .categoryName.touched &&
+                                editFoodCategoryForm.controls
+                                  .categoryName.invalid
+                              "
+                            >
+                              <span
+                                class="input-icon"
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  focusable="false"
+                                >
+                                  <path
+                                    d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+                                  />
+                                </svg>
+                              </span>
+
+                              <input
+                                [id]="
+                                  'edit-category-name-' +
+                                  category.id
+                                "
+                                type="text"
+                                formControlName="categoryName"
+                                maxlength="100"
+                                autocomplete="off"
+                                [attr.aria-invalid]="
+                                  editFoodCategoryForm.controls
+                                    .categoryName.touched &&
+                                  editFoodCategoryForm.controls
+                                    .categoryName.invalid
+                                "
+                              />
+                            </div>
+
+                            <div
+                              class="validation-container"
+                              aria-live="polite"
+                            >
+                              @if (
+                                editFoodCategoryForm.controls
+                                  .categoryName.touched &&
+                                editFoodCategoryForm.controls
+                                  .categoryName.hasError(
+                                    'required'
+                                  )
+                              ) {
+                                <p class="validation-message">
+                                  <span aria-hidden="true">!</span>
+                                  Category name is required.
+                                </p>
+                              } @else if (
+                                editFoodCategoryForm.controls
+                                  .categoryName.touched &&
+                                editFoodCategoryForm.controls
+                                  .categoryName.hasError(
+                                    'maxlength'
+                                  )
+                              ) {
+                                <p class="validation-message">
+                                  <span aria-hidden="true">!</span>
+                                  Category name cannot exceed
+                                  100 characters.
+                                </p>
+                              }
+                            </div>
+                          </div>
+
+                          <label class="status-control">
+                            <input
+                              type="checkbox"
+                              formControlName="isActive"
+                            />
+
+                            <span
+                              class="status-switch"
+                              aria-hidden="true"
+                            >
+                              <span></span>
+                            </span>
+
+                            <span class="status-copy">
+                              <strong>Active category</strong>
+
+                              <small>
+                                Inactive categories cannot be selected
+                                for new food items.
+                              </small>
+                            </span>
+                          </label>
+                        </div>
+
+                        <div class="edit-form-actions">
+                          <button
+                            type="button"
+                            class="cancel-button"
+                            [disabled]="isUpdating()"
+                            (click)="cancelEditingFoodCategory()"
+                          >
+                            Cancel
+                          </button>
+
+                          <button
+                            type="submit"
+                            class="primary-button"
+                            [disabled]="isMutationInProgress()"
+                          >
+                            @if (isUpdating()) {
+                              <span
+                                class="button-spinner"
+                                aria-hidden="true"
+                              ></span>
+
+                              <span>Saving...</span>
+                            } @else {
+                              <span>Save Changes</span>
+
+                              <svg
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                                focusable="false"
+                              >
+                                <path d="m5 12 4 4L19 6" />
+                              </svg>
+                            }
+                          </button>
+                        </div>
+                      </form>
+                    </section>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</main>

@@ -26,17 +26,16 @@ namespace FoodOrderAPI.IntegrationTests
         [Fact]
         public async Task Checkout_WithoutToken_ReturnsUnauthorized()
         {
-            // Arrange
+            // Authentication is evaluated before the controller
+            // attempts to read the checkout request body.
             using var request =
                 new HttpRequestMessage(
                     HttpMethod.Post,
                     "/api/Cart/checkout");
 
-            // Act
             var response =
                 await _client.SendAsync(request);
 
-            // Assert
             Assert.Equal(
                 HttpStatusCode.Unauthorized,
                 response.StatusCode);
@@ -49,10 +48,11 @@ namespace FoodOrderAPI.IntegrationTests
         [Fact]
         public async Task Checkout_WithAdminToken_ReturnsForbidden()
         {
-            // Arrange
             var adminToken =
                 await CreateAdminTokenAsync();
 
+            // Role authorization is evaluated before checkout
+            // request-body validation.
             using var request =
                 new HttpRequestMessage(
                     HttpMethod.Post,
@@ -63,11 +63,9 @@ namespace FoodOrderAPI.IntegrationTests
                     "Bearer",
                     adminToken);
 
-            // Act
             var response =
                 await _client.SendAsync(request);
 
-            // Assert
             Assert.Equal(
                 HttpStatusCode.Forbidden,
                 response.StatusCode);
@@ -80,28 +78,25 @@ namespace FoodOrderAPI.IntegrationTests
         [Fact]
         public async Task Checkout_WithEmptyCart_ReturnsBadRequest()
         {
-            // Arrange
             var customerToken =
                 await CreateCustomerTokenAsync();
 
+            // Checkout requires a valid address even when the cart
+            // is empty because address validation happens first.
+            var addressId =
+                await CreateAddressAsync(customerToken);
+
             using var request =
-                new HttpRequestMessage(
-                    HttpMethod.Post,
-                    "/api/Cart/checkout");
+                CreateCheckoutRequest(
+                    customerToken,
+                    addressId);
 
-            request.Headers.Authorization =
-                new AuthenticationHeaderValue(
-                    "Bearer",
-                    customerToken);
-
-            // Act
             var response =
                 await _client.SendAsync(request);
 
             var responseBody =
                 await response.Content.ReadAsStringAsync();
 
-            // Assert
             Assert.Equal(
                 HttpStatusCode.BadRequest,
                 response.StatusCode);
@@ -136,11 +131,17 @@ namespace FoodOrderAPI.IntegrationTests
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task Checkout_WithValidCart_CreatesOrderAndClearsItems()
+        public async Task
+            Checkout_WithValidCart_CreatesOrderAndClearsItems()
         {
-            // Arrange: create an isolated customer.
+            // Creates an isolated customer.
             var customerToken =
                 await CreateCustomerTokenAsync();
+
+            // Creates the address that will be copied into
+            // the order as an immutable snapshot.
+            var addressId =
+                await CreateAddressAsync(customerToken);
 
             // Adds the seeded food item to the customer's cart.
             var addCartItemRequest = new
@@ -178,24 +179,19 @@ namespace FoodOrderAPI.IntegrationTests
             using var addJsonDocument =
                 JsonDocument.Parse(addResponseBody);
 
-            // Stores the original cart ID so that the test
-            // can verify the same cart remains after checkout.
+            // Stores the original cart ID so the test can verify
+            // that the cart record remains after checkout.
             var originalCartId =
                 addJsonDocument.RootElement
                     .GetProperty("id")
                     .GetInt32();
 
             using var checkoutRequest =
-                new HttpRequestMessage(
-                    HttpMethod.Post,
-                    "/api/Cart/checkout");
+                CreateCheckoutRequest(
+                    customerToken,
+                    addressId);
 
-            checkoutRequest.Headers.Authorization =
-                new AuthenticationHeaderValue(
-                    "Bearer",
-                    customerToken);
-
-            // Act: checkout the customer's cart.
+            // Act
             var checkoutResponse =
                 await _client.SendAsync(
                     checkoutRequest);
@@ -247,6 +243,54 @@ namespace FoodOrderAPI.IntegrationTests
                 "Pending",
                 createdOrder
                     .GetProperty("orderStatus")
+                    .GetString());
+
+            // Confirms that the selected address was copied
+            // into the order snapshot.
+            Assert.Equal(
+                "Cart Checkout Customer",
+                createdOrder
+                    .GetProperty(
+                        "deliveryRecipientName")
+                    .GetString());
+
+            Assert.Equal(
+                "9876543214",
+                createdOrder
+                    .GetProperty("deliveryPhone")
+                    .GetString());
+
+            Assert.Equal(
+                "45, Residency Road",
+                createdOrder
+                    .GetProperty(
+                        "deliveryAddressLine1")
+                    .GetString());
+
+            Assert.Equal(
+                "Bengaluru",
+                createdOrder
+                    .GetProperty("deliveryCity")
+                    .GetString());
+
+            Assert.Equal(
+                "Karnataka",
+                createdOrder
+                    .GetProperty("deliveryState")
+                    .GetString());
+
+            Assert.Equal(
+                "560025",
+                createdOrder
+                    .GetProperty(
+                        "deliveryPostalCode")
+                    .GetString());
+
+            Assert.Equal(
+                "Call when you arrive.",
+                createdOrder
+                    .GetProperty(
+                        "deliveryInstructions")
                     .GetString());
 
             var createdOrderItems =
@@ -313,12 +357,12 @@ namespace FoodOrderAPI.IntegrationTests
             var cart =
                 cartJsonDocument.RootElement;
 
-            // The original cart remains in the database.
+            // The original Cart record remains.
             Assert.Equal(
                 originalCartId,
                 cart.GetProperty("id").GetInt32());
 
-            // Only its CartItems were deleted.
+            // Only the CartItem records were removed.
             Assert.Equal(
                 0,
                 cart
@@ -369,6 +413,14 @@ namespace FoodOrderAPI.IntegrationTests
                     .GetInt32() == createdOrderId)
                 {
                     createdOrderWasReturned = true;
+
+                    Assert.Equal(
+                        "45, Residency Road",
+                        order
+                            .GetProperty(
+                                "deliveryAddressLine1")
+                            .GetString());
+
                     break;
                 }
             }
@@ -381,10 +433,11 @@ namespace FoodOrderAPI.IntegrationTests
         // ---------------------------------------------------------
 
         [Fact]
-        public async Task Checkout_WhenItemBecomesUnavailable_PreservesCart()
+        public async Task
+            Checkout_WhenItemBecomesUnavailable_PreservesCart()
         {
-            // Arrange: creates a unique food item so this test
-            // does not modify shared seeded food-item data.
+            // Creates a unique food item so this test does not
+            // modify shared seeded food-item data.
             var adminToken =
                 await CreateAdminTokenAsync();
 
@@ -436,9 +489,13 @@ namespace FoodOrderAPI.IntegrationTests
                     .GetProperty("id")
                     .GetInt32();
 
-            // Creates a separate customer for this test.
+            // Creates a separate customer and delivery address
+            // for this test.
             var customerToken =
                 await CreateCustomerTokenAsync();
+
+            var addressId =
+                await CreateAddressAsync(customerToken);
 
             // Adds the available item to the customer's cart.
             var addCartItemRequest = new
@@ -503,15 +560,11 @@ namespace FoodOrderAPI.IntegrationTests
                 HttpStatusCode.OK,
                 updateResponse.StatusCode);
 
+            // Checkout must now include the selected address.
             using var checkoutRequest =
-                new HttpRequestMessage(
-                    HttpMethod.Post,
-                    "/api/Cart/checkout");
-
-            checkoutRequest.Headers.Authorization =
-                new AuthenticationHeaderValue(
-                    "Bearer",
-                    customerToken);
+                CreateCheckoutRequest(
+                    customerToken,
+                    addressId);
 
             // Act
             var checkoutResponse =
@@ -625,11 +678,109 @@ namespace FoodOrderAPI.IntegrationTests
         }
 
         // ---------------------------------------------------------
+        // SAVED ADDRESS HELPER
+        // ---------------------------------------------------------
+
+        // Creates a saved delivery address belonging
+        // to the authenticated customer.
+        private async Task<int> CreateAddressAsync(
+            string customerToken)
+        {
+            var addressRequest = new
+            {
+                AddressLabel = "Home",
+                RecipientName =
+                    "Cart Checkout Customer",
+                RecipientPhone =
+                    "9876543214",
+                AddressLine1 =
+                    "45, Residency Road",
+                AddressLine2 =
+                    "Apartment 5A",
+                Landmark =
+                    "Near Richmond Circle",
+                City = "Bengaluru",
+                State = "Karnataka",
+                PostalCode = "560025",
+                IsDefault = true
+            };
+
+            using var request =
+                new HttpRequestMessage(
+                    HttpMethod.Post,
+                    "/api/UserAddresses")
+                {
+                    Content =
+                        JsonContent.Create(
+                            addressRequest)
+                };
+
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue(
+                    "Bearer",
+                    customerToken);
+
+            var response =
+                await _client.SendAsync(request);
+
+            var responseBody =
+                await response.Content
+                    .ReadAsStringAsync();
+
+            Assert.Equal(
+                HttpStatusCode.Created,
+                response.StatusCode);
+
+            using var jsonDocument =
+                JsonDocument.Parse(responseBody);
+
+            return jsonDocument.RootElement
+                .GetProperty("id")
+                .GetInt32();
+        }
+
+        // ---------------------------------------------------------
+        // CHECKOUT REQUEST HELPER
+        // ---------------------------------------------------------
+
+        // Creates a checkout request containing the selected
+        // saved-address ID and optional delivery instructions.
+        private static HttpRequestMessage
+            CreateCheckoutRequest(
+                string customerToken,
+                int addressId)
+        {
+            var request =
+                new HttpRequestMessage(
+                    HttpMethod.Post,
+                    "/api/Cart/checkout")
+                {
+                    Content =
+                        JsonContent.Create(
+                            new
+                            {
+                                UserAddressId = addressId,
+
+                                DeliveryInstructions =
+                                    "  Call when you arrive.  "
+                            })
+                };
+
+            request.Headers.Authorization =
+                new AuthenticationHeaderValue(
+                    "Bearer",
+                    customerToken);
+
+            return request;
+        }
+
+        // ---------------------------------------------------------
         // CUSTOMER TOKEN HELPER
         // ---------------------------------------------------------
 
         // Registers a unique customer and returns their JWT.
-        private async Task<string> CreateCustomerTokenAsync()
+        private async Task<string>
+            CreateCustomerTokenAsync()
         {
             var uniqueValue =
                 Guid.NewGuid().ToString("N");
@@ -690,7 +841,8 @@ namespace FoodOrderAPI.IntegrationTests
         // ---------------------------------------------------------
 
         // Logs in as the seeded integration-test Admin.
-        private async Task<string> CreateAdminTokenAsync()
+        private async Task<string>
+            CreateAdminTokenAsync()
         {
             var loginRequest = new
             {

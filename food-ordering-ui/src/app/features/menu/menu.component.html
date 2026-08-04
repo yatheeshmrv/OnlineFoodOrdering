@@ -1,0 +1,367 @@
+<main class="menu-page">
+  <section
+    class="menu-hero"
+    aria-labelledby="menu-heading"
+  >
+    <div class="menu-hero-content">
+      <p class="eyebrow">
+        Freshly prepared for you
+      </p>
+
+      <h1 id="menu-heading">
+        Discover your next favourite meal
+      </h1>
+
+      <p class="menu-description">
+        Explore dishes by category, check their latest availability
+        and add your favourites directly to the cart.
+      </p>
+
+      <div
+        class="menu-highlights"
+        aria-label="Menu benefits"
+      >
+        <span>
+          <strong>Fresh</strong>
+          preparation
+        </span>
+
+        <span>
+          <strong>Clear</strong>
+          pricing
+        </span>
+
+        <span>
+          <strong>Easy</strong>
+          categories
+        </span>
+      </div>
+    </div>
+
+    <div
+      class="menu-hero-visual"
+      aria-hidden="true"
+    >
+      <div class="hero-plate">
+        <span>🍽️</span>
+      </div>
+
+      <div class="hero-floating-card">
+        <strong>Browse by category</strong>
+        <small>Find the right meal faster</small>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="menu-content"
+    aria-labelledby="food-items-heading"
+  >
+    @if (cartMessage()) {
+      <div
+        class="operation-message success-message"
+        role="status"
+        aria-live="polite"
+      >
+        <span
+          class="message-icon"
+          aria-hidden="true"
+        >
+          ✓
+        </span>
+
+        <p>{{ cartMessage() }}</p>
+      </div>
+    }
+
+    @if (cartErrorMessage()) {
+      <div
+        class="operation-message error-message"
+        role="alert"
+      >
+        <span
+          class="message-icon"
+          aria-hidden="true"
+        >
+          !
+        </span>
+
+        <p>{{ cartErrorMessage() }}</p>
+      </div>
+    }
+
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">
+          Available dishes
+        </p>
+
+        <h2 id="food-items-heading">
+          Browse the menu
+        </h2>
+      </div>
+
+      <p>
+        Choose a category to quickly find the dishes you are looking
+        for.
+      </p>
+    </div>
+
+    @if (isLoading()) {
+      <div
+        class="menu-state loading-state"
+        role="status"
+        aria-live="polite"
+      >
+        <div
+          class="loading-spinner"
+          aria-hidden="true"
+        ></div>
+
+        <div>
+          <h3>Loading food items</h3>
+
+          <p>
+            Retrieving the latest menu, categories and availability.
+          </p>
+        </div>
+      </div>
+    } @else if (errorMessage()) {
+      <div
+        class="menu-state menu-error-state"
+        role="alert"
+      >
+        <span
+          class="state-icon"
+          aria-hidden="true"
+        >
+          !
+        </span>
+
+        <div>
+          <h3>Menu could not be loaded</h3>
+
+          <p>{{ errorMessage() }}</p>
+        </div>
+      </div>
+    } @else if (foodItems().length === 0) {
+      <div class="menu-state empty-state">
+        <span
+          class="state-icon"
+          aria-hidden="true"
+        >
+          🍽️
+        </span>
+
+        <div>
+          <h3>No food items available</h3>
+
+          <p>
+            The menu does not currently contain any dishes. Please
+            check again later.
+          </p>
+        </div>
+      </div>
+    } @else {
+      <section
+        class="category-browser"
+        aria-labelledby="category-browser-heading"
+      >
+        <div class="category-browser-heading">
+          <div>
+            <p class="eyebrow">
+              Menu categories
+            </p>
+
+            <h3 id="category-browser-heading">
+              What would you like to eat?
+            </h3>
+          </div>
+
+          <p>
+            Select a category to display its food items.
+          </p>
+        </div>
+
+        <div
+          class="category-list"
+          role="group"
+          aria-label="Filter food items by category"
+        >
+          @for (
+            category of foodCategories();
+            track category.id
+          ) {
+            <button
+              type="button"
+              class="category-filter-button"
+              [class.active]="
+                selectedCategoryId() === category.id
+              "
+              [attr.aria-pressed]="
+                selectedCategoryId() === category.id
+              "
+              (click)="selectCategory(category.id)"
+            >
+              <span
+                class="category-filter-icon"
+                aria-hidden="true"
+              >
+                🍲
+              </span>
+
+              <span class="category-filter-copy">
+                <strong>
+                  {{ category.name }}
+                </strong>
+
+                <small>
+                  Browse dishes
+                </small>
+              </span>
+
+              <span class="category-count">
+                {{ category.itemCount }}
+              </span>
+            </button>
+          }
+        </div>
+      </section>
+
+      <div class="results-heading">
+        <div class="selected-category-heading">
+          <span class="selected-category-label">
+            Showing category
+          </span>
+
+          <h3>
+            {{ selectedCategoryName() }}
+          </h3>
+        </div>
+
+        <div class="results-summary">
+          <strong>
+            {{ filteredFoodItems().length }}
+            {{
+              filteredFoodItems().length === 1
+                ? 'item'
+                : 'items'
+            }}
+          </strong>
+
+          <span>
+            Select an available dish to add it to your cart.
+          </span>
+        </div>
+      </div>
+
+      @if (filteredFoodItems().length === 0) {
+        <div class="menu-state category-empty-state">
+          <span
+            class="state-icon"
+            aria-hidden="true"
+          >
+            🍽️
+          </span>
+
+          <div>
+            <h3>No dishes in this category</h3>
+
+            <p>
+              Select another category to continue browsing.
+            </p>
+          </div>
+        </div>
+      } @else {
+        <div class="food-grid">
+          @for (
+            item of filteredFoodItems();
+            track item.id
+          ) {
+            <article
+              class="food-card"
+              [class.unavailable-card]="!item.isAvailable"
+            >
+              <div class="food-card-visual">
+                <span
+                  class="food-symbol"
+                  aria-hidden="true"
+                >
+                  🍲
+                </span>
+
+                <span class="category">
+                  {{ item.foodCategoryName }}
+                </span>
+              </div>
+
+              <div class="food-card-content">
+                <div class="card-heading">
+                  <span
+                    class="availability"
+                    [class.unavailable]="!item.isAvailable"
+                  >
+                    {{
+                      item.isAvailable
+                        ? 'Available now'
+                        : 'Currently unavailable'
+                    }}
+                  </span>
+                </div>
+
+                <h3>
+                  {{ item.name }}
+                </h3>
+
+                <p class="food-description">
+                  {{ item.description }}
+                </p>
+
+                <div class="card-footer">
+                  <div class="price-details">
+                    <span class="price-label">
+                      Price
+                    </span>
+
+                    <strong class="price">
+                      {{
+                        item.price
+                          | currency:'INR':'symbol':'1.2-2'
+                      }}
+                    </strong>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="add-to-cart-button"
+                    [disabled]="
+                      !item.isAvailable ||
+                      addingFoodItemId() !== null
+                    "
+                    (click)="addToCart(item)"
+                  >
+                    @if (
+                      addingFoodItemId() === item.id
+                    ) {
+                      <span
+                        class="button-spinner"
+                        aria-hidden="true"
+                      ></span>
+
+                      <span>Adding...</span>
+                    } @else if (!item.isAvailable) {
+                      <span>Unavailable</span>
+                    } @else {
+                      <span>Add to Cart</span>
+                      <span aria-hidden="true">→</span>
+                    }
+                  </button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    }
+  </section>
+</main>

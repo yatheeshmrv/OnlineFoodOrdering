@@ -25,5 +25,17 @@ namespace FoodOrderAPI.Models
         // whenever an ApplicationUser object is serialized.
         [JsonIgnore]
         public Cart? Cart { get; set; }
+
+        // Navigation property for the customer's saved delivery
+        // addresses.
+        //
+        // One customer can save multiple addresses such as
+        // Home, Work or Other.
+        //
+        // JsonIgnore prevents address information from being returned
+        // whenever an ApplicationUser object is serialized.
+        [JsonIgnore]
+        public List<UserAddress> UserAddresses { get; set; } =
+            new List<UserAddress>();
     }
 }

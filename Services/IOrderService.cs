@@ -2,23 +2,33 @@
 
 namespace FoodOrderAPI.Services
 {
+    // Defines the business operations available
+    // for customer and administrator order management.
     public interface IOrderService
     {
+        // Returns every order in the application.
+        // Intended for Admin users.
         Task<List<OrderDto>> GetAllOrdersAsync();
 
+        // Returns one order using its order ID.
+        // Intended for Admin users.
         Task<OrderDto?> GetOrderByIdAsync(int id);
 
-        Task<CreateOrderResponseDto> CreateOrderAsync(CreateOrderDto createOrderDto,string userId);
+        // Returns all orders belonging to the
+        // logged-in customer.
+        Task<IEnumerable<OrderDto>> GetMyOrdersAsync(
+            string userId);
 
-        Task<IEnumerable<OrderDto>> GetMyOrdersAsync(string userId);
+        // Returns one order only when it belongs
+        // to the logged-in customer.
+        Task<OrderDto?> GetMyOrderByIdAsync(
+            int id,
+            string userId);
 
-        // Returns one order only if it belongs to the logged-in customer.
-        Task<OrderDto?> GetMyOrderByIdAsync(int id, string userId);
-
+        // Updates the status of an existing order.
+        // Intended for Admin users.
         Task<OrderDto?> UpdateOrderStatusAsync(
             int id,
             UpdateOrderStatusDto statusDto);
-
-        Task<bool> DeleteOrderAsync(int id);
     }
 }

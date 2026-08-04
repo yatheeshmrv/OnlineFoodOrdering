@@ -1,0 +1,344 @@
+<main class="orders-page">
+  <!-- Page introduction -->
+  <section
+    class="orders-hero"
+    aria-labelledby="orders-heading"
+  >
+    <div class="orders-hero-content">
+      <p class="eyebrow">
+        Order history
+      </p>
+
+      <h1 id="orders-heading">
+        My Orders
+      </h1>
+
+      <p class="hero-description">
+        Review your previous purchases, check their latest status
+        and open any order for complete details.
+      </p>
+
+      @if (!isLoading() && orders().length > 0) {
+        <div
+          class="orders-count"
+          role="status"
+        >
+          <span
+            class="count-icon"
+            aria-hidden="true"
+          >
+            🧾
+          </span>
+
+          <span>
+            <strong>
+              {{ orders().length }}
+            </strong>
+
+            {{
+              orders().length === 1
+                ? 'order in your history'
+                : 'orders in your history'
+            }}
+          </span>
+        </div>
+      }
+    </div>
+
+    <div
+      class="orders-hero-visual"
+      aria-hidden="true"
+    >
+      <div class="orders-visual-circle">
+        <span>📦</span>
+      </div>
+
+      <div class="orders-floating-card">
+        <strong>Track every order</strong>
+
+        <small>
+          View the latest status at any time
+        </small>
+      </div>
+    </div>
+  </section>
+
+  <!-- Order history content -->
+  <section
+    class="orders-content"
+    aria-labelledby="history-heading"
+  >
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">
+          Your purchases
+        </p>
+
+        <h2 id="history-heading">
+          Order history
+        </h2>
+      </div>
+
+      <p>
+        Orders are displayed with the newest purchase first.
+      </p>
+    </div>
+
+    @if (isLoading()) {
+      <div
+        class="state-card loading-state"
+        role="status"
+        aria-live="polite"
+      >
+        <div
+          class="loading-spinner"
+          aria-hidden="true"
+        ></div>
+
+        <div>
+          <h3>Loading your orders</h3>
+
+          <p>
+            Please wait while we retrieve your order history.
+          </p>
+        </div>
+      </div>
+    } @else if (errorMessage()) {
+      <div
+        class="state-card error-state"
+        role="alert"
+      >
+        <div
+          class="state-icon"
+          aria-hidden="true"
+        >
+          !
+        </div>
+
+        <div>
+          <h3>Unable to load orders</h3>
+
+          <p>
+            {{ errorMessage() }}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="retry-button"
+          (click)="loadOrders()"
+        >
+          Try Again
+        </button>
+      </div>
+    } @else if (orders().length === 0) {
+      <div class="state-card empty-state">
+        <div
+          class="state-icon"
+          aria-hidden="true"
+        >
+          🧾
+        </div>
+
+        <div>
+          <h3>No orders yet</h3>
+
+          <p>
+            Your orders will appear here after you complete your
+            first checkout.
+          </p>
+        </div>
+
+        <a
+          routerLink="/menu"
+          class="browse-menu-link"
+        >
+          Browse Menu
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    } @else {
+      <div class="results-heading">
+        <strong>
+          {{ orders().length }}
+          {{ orders().length === 1 ? 'order' : 'orders' }}
+        </strong>
+
+        <span>
+          Select View Details to open the complete order.
+        </span>
+      </div>
+
+      <div class="orders-list">
+        @for (
+          order of orders();
+          track trackOrderById($index, order)
+        ) {
+          <article class="order-card">
+            <header class="order-header">
+              <div class="order-identity">
+                <span class="order-icon" aria-hidden="true">
+                  📦
+                </span>
+
+                <div>
+                  <p class="order-number">
+                    Order #{{ order.id }}
+                  </p>
+
+                  <p class="order-date">
+                    Placed on
+                    {{ order.orderDate | date:'medium' }}
+                  </p>
+                </div>
+              </div>
+
+              <span
+                class="status-badge"
+                [class.status-pending]="
+                  order.orderStatus === 'Pending'
+                "
+                [class.status-confirmed]="
+                  order.orderStatus === 'Confirmed'
+                "
+                [class.status-preparing]="
+                  order.orderStatus === 'Preparing'
+                "
+                [class.status-out-for-delivery]="
+                  order.orderStatus === 'Out for Delivery'
+                "
+                [class.status-delivered]="
+                  order.orderStatus === 'Delivered'
+                "
+                [class.status-cancelled]="
+                  order.orderStatus === 'Cancelled'
+                "
+              >
+                {{ order.orderStatus }}
+              </span>
+            </header>
+
+            <div class="order-overview">
+              <div class="overview-item">
+                <span>
+                  Items
+                </span>
+
+                <strong>
+                  {{ order.items.length }}
+                </strong>
+              </div>
+
+              <div class="overview-item">
+                <span>
+                  Order total
+                </span>
+
+                <strong>
+                  {{
+                    order.totalAmount
+                      | currency:'INR':'symbol':'1.2-2'
+                  }}
+                </strong>
+              </div>
+            </div>
+
+            <section
+              class="order-items"
+              [attr.aria-label]="
+                'Items in order ' + order.id
+              "
+            >
+              <div class="items-heading">
+                <h3>
+                  Ordered items
+                </h3>
+
+                <span>
+                  {{ order.items.length }}
+                  {{
+                    order.items.length === 1
+                      ? 'item'
+                      : 'items'
+                  }}
+                </span>
+              </div>
+
+              <div class="items-list">
+                @for (
+                  item of order.items;
+                  track item.foodItemId
+                ) {
+                  <div class="order-item">
+                    <div
+                      class="item-visual"
+                      aria-hidden="true"
+                    >
+                      🍲
+                    </div>
+
+                    <div class="item-information">
+                      <h4>
+                        {{ item.foodItemName }}
+                      </h4>
+
+                      <p>
+                        Quantity: {{ item.quantity }}
+                      </p>
+                    </div>
+
+                    <div class="item-price">
+                      <span>
+                        {{
+                          item.unitPrice
+                            | currency:'INR':'symbol':'1.2-2'
+                        }}
+                        each
+                      </span>
+
+                      <strong>
+                        {{
+                          item.unitPrice * item.quantity
+                            | currency:'INR':'symbol':'1.2-2'
+                        }}
+                      </strong>
+                    </div>
+                  </div>
+                }
+              </div>
+            </section>
+
+            <footer class="order-footer">
+              <a
+                [routerLink]="[
+                  '/my-orders',
+                  order.id
+                ]"
+                class="view-details-link"
+                [attr.aria-label]="
+                  'View details for order ' + order.id
+                "
+              >
+                View Details
+                <span aria-hidden="true">→</span>
+              </a>
+
+              <div class="order-total">
+                <span>
+                  Order Total
+                </span>
+
+                <strong>
+                  {{
+                    order.totalAmount
+                      | currency:'INR':'symbol':'1.2-2'
+                  }}
+                </strong>
+              </div>
+            </footer>
+          </article>
+        }
+      </div>
+    }
+  </section>
+</main>

@@ -33,8 +33,14 @@ namespace FoodOrderAPI.Services
         Task<bool> ClearCartAsync(string userId);
 
         // Converts the customer's current cart into an order.
-        // Returns a failure response when checkout cannot be completed.
+        //
+        // The selected saved address is copied into the order
+        // as an immutable delivery-address snapshot.
+        //
+        // Returns a failure response when checkout
+        // cannot be completed.
         Task<CreateOrderResponseDto> CheckoutAsync(
+            CheckoutDto checkoutDto,
             string userId);
     }
 }

@@ -1,0 +1,441 @@
+<main class="admin-page">
+  <section
+    class="admin-hero"
+    aria-labelledby="admin-dashboard-heading"
+  >
+    <div class="hero-content">
+      <div class="hero-copy">
+        <p class="eyebrow">Administration</p>
+
+        <h1 id="admin-dashboard-heading">
+          Admin Dashboard
+        </h1>
+
+        <p class="hero-description">
+          Monitor restaurant performance and manage food items,
+          categories and customer orders from one secure workspace.
+        </p>
+      </div>
+
+      <div class="hero-status">
+        <span
+          class="admin-badge"
+          aria-label="Administrator access"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M12 3 5 6v5c0 4.6 2.9 8.6 7 10 4.1-1.4 7-5.4 7-10V6l-7-3Z"
+            />
+
+            <path d="m9 12 2 2 4-4" />
+          </svg>
+
+          <span>Admin access</span>
+        </span>
+
+        <div
+          class="hero-visual"
+          aria-hidden="true"
+        >
+          <span class="hero-visual-ring"></span>
+
+          <div class="hero-visual-card">
+            <span class="hero-visual-icon">
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path d="M4 19V9m5 10V5m6 14v-7m5 7V3" />
+              </svg>
+            </span>
+
+            <div>
+              <strong>Live overview</strong>
+              <small>Restaurant performance</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="statistics-section"
+    aria-labelledby="statistics-heading"
+  >
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Overview</p>
+
+        <h2 id="statistics-heading">
+          Restaurant summary
+        </h2>
+      </div>
+
+      <p>
+        Live information calculated from menu items, categories
+        and customer orders.
+      </p>
+    </div>
+
+    @if (isLoading()) {
+      <div
+        class="dashboard-state loading-state"
+        role="status"
+        aria-live="polite"
+      >
+        <span
+          class="state-icon loading-icon"
+          aria-hidden="true"
+        >
+          <span class="loading-spinner"></span>
+        </span>
+
+        <div class="state-content">
+          <h3>Loading dashboard</h3>
+
+          <p>
+            Retrieving the latest restaurant statistics.
+          </p>
+        </div>
+      </div>
+    } @else if (errorMessage()) {
+      <div
+        class="dashboard-state error-state"
+        role="alert"
+      >
+        <span
+          class="state-icon error-icon"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            focusable="false"
+          >
+            <path
+              d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+            />
+          </svg>
+        </span>
+
+        <div class="state-content">
+          <h3>Dashboard could not be loaded</h3>
+
+          <p>
+            {{ errorMessage() }}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="retry-button"
+          (click)="loadDashboardSummary()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M20 6v5h-5M4 18v-5h5m10.2-3A8 8 0 0 0 6.4 6.4L4 9m16 6-2.4 2.6A8 8 0 0 1 4.8 15"
+            />
+          </svg>
+
+          <span>Try again</span>
+        </button>
+      </div>
+    } @else {
+      <div class="statistics-grid">
+        <article class="stat-card food-items-stat">
+          <div class="stat-card-header">
+            <span
+              class="stat-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path
+                  d="M7 3v7M4.5 3v4.5A2.5 2.5 0 0 0 7 10m0 0v11M19 3v18m0-18c-2.2 0-4 2.7-4 6s1.8 5 4 5"
+                />
+              </svg>
+            </span>
+
+            <span class="stat-label">
+              Food items
+            </span>
+          </div>
+
+          <strong class="stat-value">
+            {{ summary().totalFoodItems }}
+          </strong>
+
+          <div class="stat-footer">
+            <span class="stat-highlight">
+              {{ summary().availableFoodItems }}
+            </span>
+
+            <span>currently available</span>
+          </div>
+        </article>
+
+        <article class="stat-card categories-stat">
+          <div class="stat-card-header">
+            <span
+              class="stat-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path
+                  d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+                />
+              </svg>
+            </span>
+
+            <span class="stat-label">
+              Categories
+            </span>
+          </div>
+
+          <strong class="stat-value">
+            {{ summary().totalCategories }}
+          </strong>
+
+          <div class="stat-footer">
+            <span class="stat-highlight">
+              {{ summary().activeCategories }}
+            </span>
+
+            <span>active categories</span>
+          </div>
+        </article>
+
+        <article class="stat-card orders-stat">
+          <div class="stat-card-header">
+            <span
+              class="stat-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path
+                  d="M4 7h16l-1.3 12H5.3L4 7Zm3-3h10l1 3H6l1-3Z"
+                />
+              </svg>
+            </span>
+
+            <span class="stat-label">
+              Total orders
+            </span>
+          </div>
+
+          <strong class="stat-value">
+            {{ summary().totalOrders }}
+          </strong>
+
+          <div class="stat-footer">
+            <span class="stat-highlight">
+              {{ summary().activeOrders }}
+            </span>
+
+            <span>currently active</span>
+          </div>
+        </article>
+
+        <article class="stat-card revenue-stat">
+          <div class="stat-card-header">
+            <span
+              class="stat-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path
+                  d="M6 5h12M6 9h12m-7 0c4 0 5 2 5 4s-1 4-5 4H8l7 4M9 5v4"
+                />
+              </svg>
+            </span>
+
+            <span class="stat-label">
+              Delivered revenue
+            </span>
+          </div>
+
+          <strong class="stat-value revenue-value">
+            ₹{{ summary().totalRevenue.toFixed(2) }}
+          </strong>
+
+          <div class="stat-footer">
+            <span>Revenue from delivered orders only</span>
+          </div>
+        </article>
+      </div>
+    }
+  </section>
+
+  <section
+    class="management-section"
+    aria-labelledby="management-heading"
+  >
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Management</p>
+
+        <h2 id="management-heading">
+          Manage the restaurant
+        </h2>
+      </div>
+
+      <p>
+        Choose an area to update the menu, organise categories or
+        process customer orders.
+      </p>
+    </div>
+
+    <div class="management-grid">
+      <a
+        class="management-card food-items-card"
+        routerLink="/admin/food-items"
+      >
+        <div class="management-card-top">
+          <span
+            class="card-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M7 3v7M4.5 3v4.5A2.5 2.5 0 0 0 7 10m0 0v11M19 3v18m0-18c-2.2 0-4 2.7-4 6s1.8 5 4 5"
+              />
+            </svg>
+          </span>
+
+          <span class="card-number">01</span>
+        </div>
+
+        <div class="management-card-content">
+          <h3>Food Items</h3>
+
+          <p>
+            Add dishes, update descriptions and prices, assign
+            categories and control menu availability.
+          </p>
+        </div>
+
+        <span class="management-action">
+          <span>Manage food items</span>
+
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M5 12h14m-5-5 5 5-5 5" />
+          </svg>
+        </span>
+      </a>
+
+      <a
+        class="management-card categories-card"
+        routerLink="/admin/food-categories"
+      >
+        <div class="management-card-top">
+          <span
+            class="card-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+              />
+            </svg>
+          </span>
+
+          <span class="card-number">02</span>
+        </div>
+
+        <div class="management-card-content">
+          <h3>Food Categories</h3>
+
+          <p>
+            Create, rename and activate the categories used to
+            organise dishes across the customer menu.
+          </p>
+        </div>
+
+        <span class="management-action">
+          <span>Manage categories</span>
+
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M5 12h14m-5-5 5 5-5 5" />
+          </svg>
+        </span>
+      </a>
+
+      <a
+        class="management-card orders-card"
+        routerLink="/admin/orders"
+      >
+        <div class="management-card-top">
+          <span
+            class="card-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M4 7h16l-1.3 12H5.3L4 7Zm3-3h10l1 3H6l1-3Z"
+              />
+            </svg>
+          </span>
+
+          <span class="card-number">03</span>
+        </div>
+
+        <div class="management-card-content">
+          <h3>Customer Orders</h3>
+
+          <p>
+            Search customer orders, review order details and move
+            each order through its delivery status.
+          </p>
+        </div>
+
+        <span class="management-action">
+          <span>Manage orders</span>
+
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d="M5 12h14m-5-5 5 5-5 5" />
+          </svg>
+        </span>
+      </a>
+    </div>
+  </section>
+</main>

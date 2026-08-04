@@ -1,0 +1,633 @@
+<main class="cart-page">
+  <div class="cart-container">
+    <section class="cart-hero" aria-labelledby="cart-heading">
+      <div class="cart-hero-content">
+        <p class="eyebrow">Your order</p>
+        <h1 id="cart-heading">Shopping Cart</h1>
+        <p class="cart-description">
+          Review your selected meals, choose a delivery address and
+          confirm everything before placing your order.
+        </p>
+
+        @if (!isLoading() && !isCartEmpty()) {
+          <div class="cart-item-count" role="status">
+            <span class="count-icon" aria-hidden="true">🛒</span>
+            <span>
+              <strong>{{ totalItemQuantity() }}</strong>
+              {{
+                totalItemQuantity() === 1
+                  ? 'item in your cart'
+                  : 'items in your cart'
+              }}
+            </span>
+          </div>
+        }
+      </div>
+
+      <div class="cart-hero-visual" aria-hidden="true">
+        <div class="cart-visual-circle"><span>🛒</span></div>
+        <div class="cart-floating-card">
+          <strong>Review your order</strong>
+          <small>Items, address and delivery notes</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="cart-content" aria-labelledby="cart-content-heading">
+      <div class="cart-section-heading">
+        <div>
+          <p class="eyebrow">Order details</p>
+          <h2 id="cart-content-heading">Items in your cart</h2>
+        </div>
+
+        @if (!isLoading() && !isCartEmpty()) {
+          <button
+            type="button"
+            class="clear-cart-button"
+            [disabled]="
+              isClearing() ||
+              processingItemId() !== null ||
+              isCheckingOut()
+            "
+            (click)="clearCart()"
+          >
+            @if (isClearing()) {
+              <span class="button-spinner" aria-hidden="true"></span>
+              Clearing...
+            } @else {
+              Clear Cart
+            }
+          </button>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <div class="operation-message error-message" role="alert">
+          <span class="message-icon" aria-hidden="true">!</span>
+          <div>
+            <p>{{ errorMessage() }}</p>
+            @if (isLoading()) {
+              <button type="button" class="retry-button" (click)="loadCart()">
+                Try Again
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (checkoutMessage()) {
+        <div
+          class="operation-message success-message"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="message-icon" aria-hidden="true">✓</span>
+          <p>{{ checkoutMessage() }}</p>
+        </div>
+      }
+
+      @if (checkoutErrorMessage()) {
+        <div class="operation-message error-message" role="alert">
+          <span class="message-icon" aria-hidden="true">!</span>
+          <p>{{ checkoutErrorMessage() }}</p>
+        </div>
+      }
+
+      @if (isLoading()) {
+        <div class="cart-state loading-state" role="status" aria-live="polite">
+          <div class="loading-spinner" aria-hidden="true"></div>
+          <div>
+            <h3>Loading your cart</h3>
+            <p>Retrieving your latest selected items.</p>
+          </div>
+        </div>
+      } @else if (isCartEmpty()) {
+        <div class="cart-state empty-cart">
+          <div class="empty-cart-icon" aria-hidden="true">🛒</div>
+          <div>
+            <h3>Your cart is empty</h3>
+            <p>
+              Browse the menu and add your favourite food items
+              to begin your order.
+            </p>
+          </div>
+          <a routerLink="/menu" class="browse-menu-link">
+            Browse Menu <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      } @else {
+        <div class="cart-layout">
+          <div class="cart-main-column">
+            <section class="cart-items" aria-label="Selected food items">
+              @for (item of cart()?.items ?? []; track item.id) {
+                <article
+                  class="cart-item"
+                  [class.unavailable]="!item.isAvailable"
+                >
+                  <div class="item-visual" aria-hidden="true">
+                    <span>🍲</span>
+                  </div>
+
+                  <div class="item-details">
+                    <div class="item-heading">
+                      <div>
+                        <h3>{{ item.foodItemName }}</h3>
+                        <p class="unit-price">
+                          ₹{{ item.unitPrice.toFixed(2) }} per item
+                        </p>
+                      </div>
+
+                      @if (!item.isAvailable) {
+                        <span class="availability-badge">
+                          Currently unavailable
+                        </span>
+                      }
+                    </div>
+
+                    <div class="item-controls">
+                      <div>
+                        <span class="control-label">Quantity</span>
+                        <div class="quantity-controls">
+                          <button
+                            type="button"
+                            class="quantity-button"
+                            aria-label="Decrease quantity"
+                            [disabled]="
+                              item.quantity <= 1 ||
+                              processingItemId() !== null ||
+                              isClearing() ||
+                              isCheckingOut()
+                            "
+                            (click)="decreaseQuantity(item)"
+                          >
+                            −
+                          </button>
+
+                          <span class="quantity-value" aria-label="Item quantity">
+                            {{ item.quantity }}
+                          </span>
+
+                          <button
+                            type="button"
+                            class="quantity-button"
+                            aria-label="Increase quantity"
+                            [disabled]="
+                              processingItemId() !== null ||
+                              isClearing() ||
+                              isCheckingOut()
+                            "
+                            (click)="increaseQuantity(item)"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="item-actions">
+                        <div class="subtotal-details">
+                          <span>Subtotal</span>
+                          <strong>₹{{ item.subtotal.toFixed(2) }}</strong>
+                        </div>
+
+                        <button
+                          type="button"
+                          class="remove-button"
+                          [disabled]="
+                            processingItemId() !== null ||
+                            isClearing() ||
+                            isCheckingOut()
+                          "
+                          (click)="removeItem(item)"
+                        >
+                          @if (processingItemId() === item.id) {
+                            <span class="button-spinner" aria-hidden="true"></span>
+                            Processing...
+                          } @else {
+                            Remove
+                          }
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              }
+            </section>
+
+            <section class="delivery-section" aria-labelledby="delivery-heading">
+              <div class="delivery-heading">
+                <div>
+                  <p class="eyebrow">Delivery</p>
+                  <h2 id="delivery-heading">Choose an address</h2>
+                </div>
+
+                <button
+                  type="button"
+                  class="add-address-button"
+                  [disabled]="isAddressMutationInProgress()"
+                  (click)="openAddAddressForm()"
+                >
+                  + Add Address
+                </button>
+              </div>
+
+              @if (addressSuccessMessage()) {
+                <div class="address-message address-success" role="status">
+                  {{ addressSuccessMessage() }}
+                </div>
+              }
+
+              @if (addressErrorMessage()) {
+                <div class="address-message address-error" role="alert">
+                  {{ addressErrorMessage() }}
+                </div>
+              }
+
+              @if (isLoadingAddresses()) {
+                <div class="address-loading" role="status">
+                  <span class="button-spinner" aria-hidden="true"></span>
+                  Loading saved addresses...
+                </div>
+              } @else if (addresses().length === 0) {
+                <div class="address-empty-state">
+                  <strong>No saved address</strong>
+                  <p>Add a delivery address before placing your order.</p>
+                  <button
+                    type="button"
+                    class="add-address-button"
+                    (click)="openAddAddressForm()"
+                  >
+                    Add your first address
+                  </button>
+                </div>
+              } @else {
+                <div class="address-grid">
+                  @for (address of addresses(); track address.id) {
+                    <article
+                      class="address-card"
+                      [class.selected]="selectedAddressId() === address.id"
+                    >
+                      <button
+                        type="button"
+                        class="address-select-button"
+                        [disabled]="isAddressMutationInProgress()"
+                        (click)="selectAddress(address.id)"
+                      >
+                        <span class="selection-indicator" aria-hidden="true"></span>
+                        <span class="address-copy">
+                          <span class="address-title-row">
+                            <strong>{{ address.addressLabel }}</strong>
+                            @if (address.isDefault) {
+                              <span class="default-badge">Default</span>
+                            }
+                          </span>
+                          <span>{{ address.recipientName }} · {{ address.recipientPhone }}</span>
+                          <span>{{ address.addressLine1 }}</span>
+                          @if (address.addressLine2) {
+                            <span>{{ address.addressLine2 }}</span>
+                          }
+                          @if (address.landmark) {
+                            <span>Near {{ address.landmark }}</span>
+                          }
+                          <span>
+                            {{ address.city }}, {{ address.state }} -
+                            {{ address.postalCode }}
+                          </span>
+                        </span>
+                      </button>
+
+                      <div class="address-actions">
+                        <button
+                          type="button"
+                          [disabled]="isAddressMutationInProgress()"
+                          (click)="openEditAddressForm(address)"
+                        >
+                          Edit
+                        </button>
+
+                        @if (!address.isDefault) {
+                          <button
+                            type="button"
+                            [disabled]="isAddressMutationInProgress()"
+                            (click)="setDefaultAddress(address)"
+                          >
+                            @if (settingDefaultAddressId() === address.id) {
+                              Setting...
+                            } @else {
+                              Make Default
+                            }
+                          </button>
+                        }
+
+                        <button
+                          type="button"
+                          class="delete-address-button"
+                          [disabled]="isAddressMutationInProgress()"
+                          (click)="deleteAddress(address)"
+                        >
+                          @if (deletingAddressId() === address.id) {
+                            Deleting...
+                          } @else {
+                            Delete
+                          }
+                        </button>
+                      </div>
+                    </article>
+                  }
+                </div>
+              }
+
+              @if (isAddressFormOpen()) {
+                <form
+                  class="address-form"
+                  [formGroup]="addressForm"
+                  (ngSubmit)="saveAddress()"
+                >
+                  <div class="address-form-heading">
+                    <div>
+                      <p class="eyebrow">
+                        {{ editingAddressId() === null ? 'New address' : 'Edit address' }}
+                      </p>
+                      <h3>
+                        {{
+                          editingAddressId() === null
+                            ? 'Add delivery address'
+                            : 'Update delivery address'
+                        }}
+                      </h3>
+                    </div>
+                    <button
+                      type="button"
+                      class="form-close-button"
+                      [disabled]="isSavingAddress()"
+                      (click)="cancelAddressForm()"
+                      aria-label="Close address form"
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  <div class="address-form-grid">
+                    <label class="form-field">
+                      <span>Address label</span>
+                      <input
+                        type="text"
+                        formControlName="addressLabel"
+                        maxlength="50"
+                        placeholder="Home, Work or Other"
+                      />
+                      @if (
+                        addressForm.controls.addressLabel.touched &&
+                        addressForm.controls.addressLabel.invalid
+                      ) {
+                        <small>Enter an address label.</small>
+                      }
+                    </label>
+
+                    <label class="form-field">
+                      <span>Recipient name</span>
+                      <input
+                        type="text"
+                        formControlName="recipientName"
+                        maxlength="100"
+                        autocomplete="name"
+                      />
+                      @if (
+                        addressForm.controls.recipientName.touched &&
+                        addressForm.controls.recipientName.invalid
+                      ) {
+                        <small>Enter the recipient name.</small>
+                      }
+                    </label>
+
+                    <label class="form-field">
+                      <span>Phone number</span>
+                      <input
+                        type="tel"
+                        formControlName="recipientPhone"
+                        maxlength="10"
+                        inputmode="numeric"
+                        autocomplete="tel"
+                        placeholder="10-digit mobile number"
+                      />
+                      @if (
+                        addressForm.controls.recipientPhone.touched &&
+                        addressForm.controls.recipientPhone.invalid
+                      ) {
+                        <small>Enter a valid Indian mobile number.</small>
+                      }
+                    </label>
+
+                    <label class="form-field form-field-wide">
+                      <span>Address line 1</span>
+                      <input
+                        type="text"
+                        formControlName="addressLine1"
+                        maxlength="200"
+                        autocomplete="address-line1"
+                        placeholder="House, flat, building and street"
+                      />
+                      @if (
+                        addressForm.controls.addressLine1.touched &&
+                        addressForm.controls.addressLine1.invalid
+                      ) {
+                        <small>Enter the primary delivery address.</small>
+                      }
+                    </label>
+
+                    <label class="form-field form-field-wide">
+                      <span>Address line 2 <em>Optional</em></span>
+                      <input
+                        type="text"
+                        formControlName="addressLine2"
+                        maxlength="200"
+                        autocomplete="address-line2"
+                        placeholder="Area or additional address details"
+                      />
+                    </label>
+
+                    <label class="form-field">
+                      <span>Landmark <em>Optional</em></span>
+                      <input
+                        type="text"
+                        formControlName="landmark"
+                        maxlength="100"
+                      />
+                    </label>
+
+                    <label class="form-field">
+                      <span>City</span>
+                      <input
+                        type="text"
+                        formControlName="city"
+                        maxlength="100"
+                        autocomplete="address-level2"
+                      />
+                      @if (
+                        addressForm.controls.city.touched &&
+                        addressForm.controls.city.invalid
+                      ) {
+                        <small>Enter the city.</small>
+                      }
+                    </label>
+
+                    <label class="form-field">
+                      <span>State</span>
+                      <input
+                        type="text"
+                        formControlName="state"
+                        maxlength="100"
+                        autocomplete="address-level1"
+                      />
+                      @if (
+                        addressForm.controls.state.touched &&
+                        addressForm.controls.state.invalid
+                      ) {
+                        <small>Enter the state.</small>
+                      }
+                    </label>
+
+                    <label class="form-field">
+                      <span>PIN code</span>
+                      <input
+                        type="text"
+                        formControlName="postalCode"
+                        maxlength="6"
+                        inputmode="numeric"
+                        autocomplete="postal-code"
+                      />
+                      @if (
+                        addressForm.controls.postalCode.touched &&
+                        addressForm.controls.postalCode.invalid
+                      ) {
+                        <small>Enter a valid six-digit PIN code.</small>
+                      }
+                    </label>
+                  </div>
+
+                  <label class="default-checkbox">
+                    <input type="checkbox" formControlName="isDefault" />
+                    <span>Use this as my default delivery address</span>
+                  </label>
+
+                  <div class="address-form-actions">
+                    <button
+                      type="button"
+                      class="secondary-address-button"
+                      [disabled]="isSavingAddress()"
+                      (click)="cancelAddressForm()"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      class="save-address-button"
+                      [disabled]="isSavingAddress()"
+                    >
+                      @if (isSavingAddress()) {
+                        <span class="button-spinner" aria-hidden="true"></span>
+                        Saving...
+                      } @else {
+                        Save Address
+                      }
+                    </button>
+                  </div>
+                </form>
+              }
+            </section>
+
+            <section class="instructions-section" aria-labelledby="instructions-heading">
+              <div>
+                <p class="eyebrow">Optional</p>
+                <h2 id="instructions-heading">Delivery instructions</h2>
+                <p>
+                  Add directions that can help the delivery partner locate you.
+                </p>
+              </div>
+              <textarea
+                rows="4"
+                maxlength="500"
+                [value]="deliveryInstructions()"
+                placeholder="Example: Call on arrival or leave with security."
+                (input)="updateDeliveryInstructions($event)"
+              ></textarea>
+              <small>{{ deliveryInstructions().length }}/500 characters</small>
+            </section>
+          </div>
+
+          <aside class="order-summary" aria-labelledby="summary-heading">
+            <div class="summary-heading">
+              <p class="eyebrow">Checkout</p>
+              <h2 id="summary-heading">Order Summary</h2>
+            </div>
+
+            <div class="summary-details">
+              <div class="summary-row">
+                <span>Total items</span>
+                <strong>{{ totalItemQuantity() }}</strong>
+              </div>
+
+              <div class="summary-row">
+                <span>Availability</span>
+                <strong>
+                  {{ allItemsAvailable() ? 'All items available' : 'Action needed' }}
+                </strong>
+              </div>
+
+              <div class="summary-row address-summary-row">
+                <span>Deliver to</span>
+                @if (selectedAddress(); as address) {
+                  <strong>
+                    {{ address.addressLabel }}<br />
+                    <small>{{ address.city }} - {{ address.postalCode }}</small>
+                  </strong>
+                } @else {
+                  <strong class="missing-address">Select an address</strong>
+                }
+              </div>
+
+              <div class="summary-divider"></div>
+
+              <div class="summary-row total-row">
+                <span>Total amount</span>
+                <strong>₹{{ (cart()?.totalAmount ?? 0).toFixed(2) }}</strong>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="checkout-button"
+              [disabled]="!canCheckout()"
+              (click)="checkout()"
+            >
+              @if (isCheckingOut()) {
+                <span class="button-spinner" aria-hidden="true"></span>
+                Placing Order...
+              } @else {
+                Place Order <span aria-hidden="true">→</span>
+              }
+            </button>
+
+            @if (!selectedAddress()) {
+              <p class="checkout-requirement">
+                Select or add a delivery address to continue.
+              </p>
+            } @else if (!allItemsAvailable()) {
+              <p class="checkout-requirement">
+                Remove unavailable items before checkout.
+              </p>
+            }
+
+            <a routerLink="/menu" class="continue-shopping-link">
+              ← Continue Shopping
+            </a>
+
+            <p class="checkout-note">
+              Availability, prices and address ownership are verified
+              again before the order is created.
+            </p>
+          </aside>
+        </div>
+      }
+    </section>
+  </div>
+</main>

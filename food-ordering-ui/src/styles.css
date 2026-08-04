@@ -1,0 +1,230 @@
+/* You can/* ---------------------------------------------------------
+   GLOBAL DESIGN TOKENS
+   --------------------------------------------------------- */
+
+:root {
+  /* Primary orange palette */
+  --color-primary-50: #fff7ed;
+  --color-primary-100: #ffedd5;
+  --color-primary-200: #fed7aa;
+  --color-primary-300: #fdba74;
+  --color-primary-500: #f97316;
+  --color-primary-600: #ea580c;
+  --color-primary-700: #c2410c;
+  --color-primary-800: #9a3412;
+
+  /* Slate palette */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  /* Status colours */
+  --color-success-50: #f0fdf4;
+  --color-success-200: #bbf7d0;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+
+  --color-danger-50: #fef2f2;
+  --color-danger-200: #fecaca;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+  --color-danger-800: #991b1b;
+
+  --color-warning-50: #fffbeb;
+  --color-warning-200: #fde68a;
+  --color-warning-500: #f59e0b;
+  --color-warning-800: #92400e;
+
+  --color-info-50: #eff6ff;
+  --color-info-200: #bfdbfe;
+  --color-info-600: #2563eb;
+  --color-info-800: #1e40af;
+
+  /* Application surfaces */
+  --color-background: var(--color-slate-50);
+  --color-surface: #ffffff;
+  --color-text: var(--color-slate-900);
+  --color-text-secondary: var(--color-slate-500);
+  --color-border: var(--color-slate-200);
+
+  /* Typography */
+  --font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  --font-size-small: 0.875rem;
+  --font-size-body: 1rem;
+  --font-size-heading-small: 1.25rem;
+  --font-size-heading-medium: 1.75rem;
+  --font-size-heading-large: clamp(2rem, 5vw, 3rem);
+
+  /* Layout */
+  --page-width: 1180px;
+  --page-gutter: 32px;
+  --page-gutter-mobile: 24px;
+
+  /* Border radius */
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 18px;
+  --radius-extra-large: 24px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-small:
+    0 6px 18px rgb(15 23 42 / 6%);
+
+  --shadow-medium:
+    0 12px 30px rgb(15 23 42 / 8%);
+
+  --shadow-large:
+    0 20px 45px rgb(15 23 42 / 12%);
+
+  --shadow-primary:
+    0 18px 42px rgb(194 65 12 / 18%);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+
+  /* Focus styling */
+  --focus-ring:
+    0 0 0 4px rgb(249 115 22 / 18%);
+}
+
+/* ---------------------------------------------------------
+   GLOBAL RESET
+   --------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  color-scheme: light;
+  font-family: var(--font-family);
+  background: var(--color-background);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  color: var(--color-text);
+  background: var(--color-background);
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+app-root {
+  display: block;
+  min-height: 100vh;
+}
+
+/* ---------------------------------------------------------
+   GLOBAL ELEMENT DEFAULTS
+   --------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--color-text);
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+p {
+  line-height: 1.65;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+select {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+table {
+  border-spacing: 0;
+}
+
+::selection {
+  color: #ffffff;
+  background: var(--color-primary-600);
+}
+
+/* ---------------------------------------------------------
+   ACCESSIBILITY
+   --------------------------------------------------------- */
+
+:focus-visible {
+  outline: 3px solid rgb(249 115 22 / 35%);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE GLOBAL VALUES
+   --------------------------------------------------------- */
+
+@media (max-width: 650px) {
+  :root {
+    --page-gutter: var(--page-gutter-mobile);
+  }
+}

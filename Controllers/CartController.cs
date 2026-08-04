@@ -30,13 +30,18 @@ namespace FoodOrderAPI.Controllers
         private readonly IValidator<UpdateCartItemQuantityDto>
             _updateCartItemQuantityValidator;
 
+        // FluentValidation validator for CheckoutDto.
+        private readonly IValidator<CheckoutDto>
+            _checkoutValidator;
+
         // Constructor injection provides the cart service
-        // and both request validators.
+        // and request validators.
         public CartController(
             ICartService cartService,
             IValidator<AddCartItemDto> addCartItemValidator,
             IValidator<UpdateCartItemQuantityDto>
-                updateCartItemQuantityValidator)
+                updateCartItemQuantityValidator,
+            IValidator<CheckoutDto> checkoutValidator)
         {
             // Stores the injected cart service.
             _cartService = cartService;
@@ -47,6 +52,9 @@ namespace FoodOrderAPI.Controllers
             // Stores the quantity-update validator.
             _updateCartItemQuantityValidator =
                 updateCartItemQuantityValidator;
+
+            // Stores the checkout validator.
+            _checkoutValidator = checkoutValidator;
         }
 
         // ---------------------------------------------------------
@@ -60,14 +68,16 @@ namespace FoodOrderAPI.Controllers
             // Reads the logged-in customer's Identity ID
             // from the JWT.
             var userId =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier);
 
             // Rejects a token without a user ID.
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return Unauthorized(new
                 {
-                    message = "User ID was not found in the token."
+                    message =
+                        "User ID was not found in the token."
                 });
             }
 
@@ -93,14 +103,16 @@ namespace FoodOrderAPI.Controllers
             // Reads the logged-in customer's Identity ID
             // from the JWT.
             var userId =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier);
 
             // Rejects a token without a user ID.
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return Unauthorized(new
                 {
-                    message = "User ID was not found in the token."
+                    message =
+                        "User ID was not found in the token."
                 });
             }
 
@@ -149,14 +161,16 @@ namespace FoodOrderAPI.Controllers
             // Reads the logged-in customer's Identity ID
             // from the JWT.
             var userId =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier);
 
             // Rejects a token without a user ID.
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return Unauthorized(new
                 {
-                    message = "User ID was not found in the token."
+                    message =
+                        "User ID was not found in the token."
                 });
             }
 
@@ -215,14 +229,16 @@ namespace FoodOrderAPI.Controllers
             // Reads the logged-in customer's Identity ID
             // from the JWT.
             var userId =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier);
 
             // Rejects a token without a user ID.
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return Unauthorized(new
                 {
-                    message = "User ID was not found in the token."
+                    message =
+                        "User ID was not found in the token."
                 });
             }
 
@@ -252,33 +268,61 @@ namespace FoodOrderAPI.Controllers
         // ---------------------------------------------------------
 
         // Handles POST api/Cart/checkout.
-        // No request body is required because checkout uses
-        // the logged-in customer's existing cart.
+        //
+        // Checkout now requires a saved delivery-address ID
+        // and optionally accepts delivery instructions.
         [HttpPost("checkout")]
         public async Task<ActionResult<CreateOrderResponseDto>>
-            Checkout()
+            Checkout(
+                [FromBody]
+                CheckoutDto checkoutDto)
         {
             // Reads the logged-in customer's Identity ID
             // from the JWT.
             var userId =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier);
 
             // Rejects a token without a user ID.
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return Unauthorized(new
                 {
-                    message = "User ID was not found in the token."
+                    message =
+                        "User ID was not found in the token."
                 });
             }
 
-            // Attempts to convert the customer's cart into an order.
+            // Executes CheckoutDtoValidator.
+            var validationResult =
+                await _checkoutValidator.ValidateAsync(
+                    checkoutDto);
+
+            // Checks whether any validation rules failed.
+            if (!validationResult.IsValid)
+            {
+                // Adds every validation error to ModelState.
+                foreach (var error in validationResult.Errors)
+                {
+                    ModelState.AddModelError(
+                        error.PropertyName,
+                        error.ErrorMessage);
+                }
+
+                // Returns HTTP 400 with validation errors.
+                return ValidationProblem(ModelState);
+            }
+
+            // Attempts to convert the customer's cart into
+            // an order using the selected delivery address.
             var checkoutResult =
-                await _cartService.CheckoutAsync(userId);
+                await _cartService.CheckoutAsync(
+                    checkoutDto,
+                    userId);
 
             // Returns HTTP 400 when checkout is rejected,
-            // such as when the cart is empty or an item
-            // is no longer available.
+            // such as when the cart is empty, the selected
+            // address is invalid or an item is unavailable.
             if (!checkoutResult.IsSuccess)
             {
                 return BadRequest(checkoutResult);
@@ -299,14 +343,16 @@ namespace FoodOrderAPI.Controllers
             // Reads the logged-in customer's Identity ID
             // from the JWT.
             var userId =
-                User.FindFirstValue(ClaimTypes.NameIdentifier);
+                User.FindFirstValue(
+                    ClaimTypes.NameIdentifier);
 
             // Rejects a token without a user ID.
             if (string.IsNullOrWhiteSpace(userId))
             {
                 return Unauthorized(new
                 {
-                    message = "User ID was not found in the token."
+                    message =
+                        "User ID was not found in the token."
                 });
             }
 

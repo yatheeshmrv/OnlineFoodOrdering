@@ -75,7 +75,7 @@ namespace FoodOrderAPI.Repositories
 
             _context.FoodCategories.Remove(existingCategory);
 
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
             return true;
         }

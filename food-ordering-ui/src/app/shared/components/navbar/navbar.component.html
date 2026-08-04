@@ -1,0 +1,69 @@
+<header class="site-header">
+  <a routerLink="/" class="brand">
+    Food Ordering
+  </a>
+
+  <nav aria-label="Main navigation">
+    <a
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      Home
+    </a>
+
+    <a
+      routerLink="/menu"
+      routerLinkActive="active"
+    >
+      Menu
+    </a>
+
+    @if (isAuthenticated()) {
+      @if (isAdmin()) {
+        <a
+          routerLink="/admin"
+          routerLinkActive="active"
+        >
+          Admin Dashboard
+        </a>
+      } @else {
+        <a
+          routerLink="/cart"
+          routerLinkActive="active"
+        >
+          Cart
+        </a>
+
+        <a
+          routerLink="/my-orders"
+          routerLinkActive="active"
+        >
+          My Orders
+        </a>
+      }
+
+      <button
+        type="button"
+        class="logout-button"
+        (click)="logout()"
+      >
+        Logout
+      </button>
+    } @else {
+      <a
+        routerLink="/login"
+        routerLinkActive="active"
+      >
+        Login
+      </a>
+
+      <a
+        routerLink="/register"
+        routerLinkActive="active"
+      >
+        Register
+      </a>
+    }
+  </nav>
+</header>

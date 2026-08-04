@@ -1,0 +1,1180 @@
+<main class="admin-orders-page">
+  <section
+    class="page-hero"
+    aria-labelledby="admin-orders-heading"
+  >
+    <div class="hero-content">
+      <a
+        class="back-link"
+        routerLink="/admin"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+
+        <span>Back to Admin Dashboard</span>
+      </a>
+
+      <div class="hero-copy">
+        <p class="eyebrow">Order management</p>
+
+        <h1 id="admin-orders-heading">
+          Customer Orders
+        </h1>
+
+        <p class="page-description">
+          Review customer purchases, inspect ordered items and move
+          each order through its fulfilment workflow while preserving
+          the complete order history.
+        </p>
+      </div>
+
+      <div
+        class="hero-decoration"
+        aria-hidden="true"
+      >
+        <span class="hero-ring"></span>
+
+        <div class="hero-summary-card">
+          <span class="hero-summary-icon">
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M4 7h16l-1.3 12H5.3L4 7Zm3-3h10l1 3H6l1-3Z"
+              />
+            </svg>
+          </span>
+
+          <span>
+            <strong>Order workflow</strong>
+            <small>Review, track and update fulfilment</small>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="summary-section"
+    aria-labelledby="summary-heading"
+  >
+    <div class="section-heading summary-heading">
+      <div>
+        <p class="eyebrow">Overview</p>
+
+        <h2 id="summary-heading">
+          Order summary
+        </h2>
+      </div>
+
+      <p>
+        A live overview of all customer orders and their current
+        fulfilment progress.
+      </p>
+    </div>
+
+    <div
+      class="summary-grid"
+      aria-label="Order summary statistics"
+    >
+      <article class="summary-card total-summary">
+        <div class="summary-card-header">
+          <span
+            class="summary-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M4 7h16l-1.3 12H5.3L4 7Zm3-3h10l1 3H6l1-3Z"
+              />
+            </svg>
+          </span>
+
+          <span class="summary-label">
+            Total orders
+          </span>
+        </div>
+
+        <strong class="summary-value">
+          {{ totalOrderCount() }}
+        </strong>
+
+        <p>
+          All customer orders
+        </p>
+      </article>
+
+      <article class="summary-card pending-summary">
+        <div class="summary-card-header">
+          <span
+            class="summary-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M12 7v5l3 2M21 12a9 9 0 1 1-9-9 9 9 0 0 1 9 9Z"
+              />
+            </svg>
+          </span>
+
+          <span class="summary-label">
+            Pending
+          </span>
+        </div>
+
+        <strong class="summary-value">
+          {{ pendingOrderCount() }}
+        </strong>
+
+        <p>
+          Waiting for confirmation
+        </p>
+      </article>
+
+      <article class="summary-card active-summary">
+        <div class="summary-card-header">
+          <span
+            class="summary-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M4 15h3l2-6 4 10 2-7 2 3h3"
+              />
+            </svg>
+          </span>
+
+          <span class="summary-label">
+            Active
+          </span>
+        </div>
+
+        <strong class="summary-value">
+          {{ activeOrderCount() }}
+        </strong>
+
+        <p>
+          Currently being fulfilled
+        </p>
+      </article>
+
+      <article class="summary-card delivered-summary">
+        <div class="summary-card-header">
+          <span
+            class="summary-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path
+                d="M12 3 5 6v5c0 4.6 2.9 8.6 7 10 4.1-1.4 7-5.4 7-10V6l-7-3Zm-3 9 2 2 4-4"
+              />
+            </svg>
+          </span>
+
+          <span class="summary-label">
+            Delivered
+          </span>
+        </div>
+
+        <strong class="summary-value">
+          {{ deliveredOrderCount() }}
+        </strong>
+
+        <p>
+          Successfully completed
+        </p>
+      </article>
+    </div>
+  </section>
+
+  @if (isLoading()) {
+    <section
+      class="state-card loading-state"
+      role="status"
+      aria-live="polite"
+    >
+      <span
+        class="state-icon"
+        aria-hidden="true"
+      >
+        <span class="loading-spinner"></span>
+      </span>
+
+      <div>
+        <h2>Loading customer orders</h2>
+
+        <p>
+          Retrieving the latest order information.
+        </p>
+      </div>
+    </section>
+  } @else if (loadErrorMessage()) {
+    <section
+      class="state-card error-state"
+      role="alert"
+    >
+      <span
+        class="state-icon"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          focusable="false"
+        >
+          <path
+            d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+          />
+        </svg>
+      </span>
+
+      <div class="state-content">
+        <h2>Customer orders could not be loaded</h2>
+
+        <p>{{ loadErrorMessage() }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="retry-button"
+        (click)="loadOrders()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M20 6v5h-5M4 18v-5h5m10.2-3A8 8 0 0 0 6.4 6.4L4 9m16 6-2.4 2.6A8 8 0 0 1 4.8 15"
+          />
+        </svg>
+
+        <span>Try again</span>
+      </button>
+    </section>
+  } @else if (orders().length === 0) {
+    <section class="state-card empty-state">
+      <span
+        class="state-icon"
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          focusable="false"
+        >
+          <path
+            d="M4 7h16l-1.3 12H5.3L4 7Zm3-3h10l1 3H6l1-3Z"
+          />
+        </svg>
+      </span>
+
+      <div>
+        <h2>No customer orders found</h2>
+
+        <p>
+          Customer orders will appear here after checkout.
+        </p>
+      </div>
+    </section>
+  } @else {
+    <section
+      class="orders-section"
+      aria-labelledby="orders-heading"
+    >
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Order inventory</p>
+
+          <h2 id="orders-heading">
+            Manage Orders
+          </h2>
+        </div>
+
+        <p>
+          Search customer orders, review purchased items and update
+          their current fulfilment status.
+        </p>
+      </div>
+
+      <div class="filter-panel">
+        <div class="filter-field search-field">
+          <label for="order-search">
+            Search orders
+          </label>
+
+          <div class="filter-input-container">
+            <span
+              class="filter-input-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="7"
+                />
+
+                <path d="m16 16 4 4" />
+              </svg>
+            </span>
+
+            <input
+              id="order-search"
+              type="search"
+              [value]="searchTerm()"
+              placeholder="Order ID, customer, phone, city or status"
+              autocomplete="off"
+              (input)="updateSearchTerm($event)"
+            />
+          </div>
+        </div>
+
+        <div class="filter-field status-filter-field">
+          <label for="order-status-filter">
+            Filter by status
+          </label>
+
+          <div class="filter-input-container select-container">
+            <span
+              class="filter-input-icon"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path
+                  d="M4 5h16M7 12h10m-7 7h4"
+                />
+              </svg>
+            </span>
+
+            <select
+              id="order-status-filter"
+              [value]="statusFilter()"
+              (change)="updateStatusFilter($event)"
+            >
+              <option value="">
+                All statuses
+              </option>
+
+              @for (
+                orderStatus of orderStatuses;
+                track orderStatus
+              ) {
+                <option [value]="orderStatus">
+                  {{ orderStatus }}
+                </option>
+              }
+            </select>
+
+            <span
+              class="select-arrow"
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                focusable="false"
+              >
+                <path d="m7 10 5 5 5-5" />
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="clear-filter-button"
+          [disabled]="
+            !searchTerm() &&
+            !statusFilter()
+          "
+          (click)="clearFilters()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path
+              d="M5 5l14 14M19 5 5 19"
+            />
+          </svg>
+
+          <span>Clear filters</span>
+        </button>
+      </div>
+
+      @if (updateSuccessMessage()) {
+        <div
+          class="operation-message success-message"
+          role="status"
+          aria-live="polite"
+        >
+          <span
+            class="message-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <path d="m5 12 4 4L19 6" />
+            </svg>
+          </span>
+
+          <div class="message-content">
+            <strong>Order status updated</strong>
+            <p>{{ updateSuccessMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      <div class="results-heading">
+        <div>
+          <strong>
+            {{ filteredOrders().length }}
+            {{
+              filteredOrders().length === 1
+                ? 'order'
+                : 'orders'
+            }}
+          </strong>
+
+          @if (
+            searchTerm() ||
+            statusFilter()
+          ) {
+            <span>
+              Matching the current filters
+            </span>
+          } @else {
+            <span>
+              Sorted from newest to oldest
+            </span>
+          }
+        </div>
+
+        @if (
+          searchTerm() ||
+          statusFilter()
+        ) {
+          <span class="filters-active-badge">
+            Filters active
+          </span>
+        }
+      </div>
+
+      @if (filteredOrders().length === 0) {
+        <section class="filter-empty-state">
+          <span
+            class="empty-filter-icon"
+            aria-hidden="true"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <circle
+                cx="11"
+                cy="11"
+                r="7"
+              />
+
+              <path d="m16 16 4 4M8 11h6" />
+            </svg>
+          </span>
+
+          <h3>No matching orders</h3>
+
+          <p>
+            Try changing the search text or selected status.
+          </p>
+
+          <button
+            type="button"
+            class="clear-filter-button"
+            (click)="clearFilters()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M5 5l14 14M19 5 5 19"
+              />
+            </svg>
+
+            <span>Clear filters</span>
+          </button>
+        </section>
+      } @else {
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Order</th>
+                <th scope="col">Customer</th>
+                <th scope="col">Date</th>
+                <th scope="col">Total</th>
+                <th scope="col">Status</th>
+                <th scope="col">Items</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (
+                order of filteredOrders();
+                track order.id
+              ) {
+                <tr class="order-row">
+                  <td data-label="Order">
+                    <div class="order-identity">
+                      <span
+                        class="order-icon"
+                        aria-hidden="true"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          focusable="false"
+                        >
+                          <path
+                            d="M4 7h16l-1.3 12H5.3L4 7Zm3-3h10l1 3H6l1-3Z"
+                          />
+                        </svg>
+                      </span>
+
+                      <span class="order-identity-copy">
+                        <strong>
+                          Order #{{ order.id }}
+                        </strong>
+
+                        <span>
+                          {{ order.items.length }}
+                          {{
+                            order.items.length === 1
+                              ? 'item'
+                              : 'items'
+                          }}
+                        </span>
+                      </span>
+                    </div>
+                  </td>
+
+                  <td data-label="Customer">
+                    <div class="customer-details">
+                      <strong>
+                        {{ order.customerName }}
+                      </strong>
+
+                      <span>
+                        {{
+                          order.customerPhone ||
+                          'Phone not provided'
+                        }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td
+                    class="date-cell"
+                    data-label="Date"
+                  >
+                    <strong>
+                      {{
+                        order.orderDate
+                          | date:'dd MMM yyyy'
+                      }}
+                    </strong>
+
+                    <span>
+                      {{
+                        order.orderDate
+                          | date:'h:mm a'
+                      }}
+                    </span>
+                  </td>
+
+                  <td
+                    class="total-cell"
+                    data-label="Total"
+                  >
+                    {{
+                      order.totalAmount
+                        | currency:'INR':'symbol':'1.2-2'
+                    }}
+                  </td>
+
+                  <td data-label="Status">
+                    <span
+                      [class]="
+                        'status-badge ' +
+                        getOrderStatusClass(
+                          order.orderStatus
+                        )
+                      "
+                    >
+                      <span
+                        class="status-dot"
+                        aria-hidden="true"
+                      ></span>
+
+                      {{ order.orderStatus }}
+                    </span>
+                  </td>
+
+                  <td data-label="Items">
+                    <button
+                      type="button"
+                      class="details-button"
+                      [attr.aria-expanded]="
+                        expandedOrderId() === order.id
+                      "
+                      [attr.aria-controls]="
+                        'order-details-' + order.id
+                      "
+                      (click)="toggleOrderDetails(order.id)"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        @if (
+                          expandedOrderId() === order.id
+                        ) {
+                          <path
+                            d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Zm9-2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"
+                          />
+
+                          <path d="M4 4l16 16" />
+                        } @else {
+                          <path
+                            d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Zm9-2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z"
+                          />
+                        }
+                      </svg>
+
+                      <span>
+                        @if (
+                          expandedOrderId() === order.id
+                        ) {
+                          Hide details
+                        } @else {
+                          View details
+                        }
+                      </span>
+                    </button>
+                  </td>
+
+                  <td
+                    class="actions-cell"
+                    data-label="Actions"
+                  >
+                    <button
+                      type="button"
+                      class="status-button"
+                      [disabled]="isMutationInProgress()"
+                      [attr.aria-expanded]="
+                        editingOrderId() === order.id
+                      "
+                      [attr.aria-controls]="
+                        'status-editor-' + order.id
+                      "
+                      (click)="
+                        startEditingOrderStatus(order)
+                      "
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path
+                          d="m4 16-.8 4.8L8 20l11-11-4-4L4 16Zm9-9 4 4"
+                        />
+                      </svg>
+
+                      <span>Update Status</span>
+                    </button>
+                  </td>
+                </tr>
+
+                @if (
+                  expandedOrderId() === order.id
+                ) {
+                  <tr class="details-row">
+                    <td colspan="7">
+                      <section
+                        class="order-details-panel"
+                        [id]="
+                          'order-details-' + order.id
+                        "
+                        [attr.aria-labelledby]="
+                          'order-details-heading-' +
+                          order.id
+                        "
+                      >
+                        <div class="details-heading">
+                          <div>
+                            <p class="eyebrow">
+                              Ordered items
+                            </p>
+
+                            <h3
+                              [id]="
+                                'order-details-heading-' +
+                                order.id
+                              "
+                            >
+                              Order #{{ order.id }} details
+                            </h3>
+                          </div>
+
+                          <span class="customer-summary">
+                            <svg
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                              focusable="false"
+                            >
+                              <path
+                                d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0"
+                              />
+                            </svg>
+
+                            <span>{{ order.customerName }}</span>
+                          </span>
+                        </div>
+
+                        <section
+                          class="delivery-details-card"
+                          aria-label="Delivery address"
+                        >
+                          <div class="delivery-details-heading">
+                            <span class="delivery-details-icon" aria-hidden="true">
+                              <svg viewBox="0 0 24 24" focusable="false">
+                                <path
+                                  d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Zm-8-3a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"
+                                />
+                              </svg>
+                            </span>
+
+                            <div>
+                              <p class="eyebrow">Delivery</p>
+                              <h4>Delivery address</h4>
+                            </div>
+                          </div>
+
+                          @if (order.deliveryAddressLine1) {
+                            <div class="delivery-details-grid">
+                              <div class="delivery-field">
+                                <span>Recipient</span>
+                                <strong>
+                                  {{
+                                    order.deliveryRecipientName ||
+                                    order.customerName
+                                  }}
+                                </strong>
+                              </div>
+
+                              <div class="delivery-field">
+                                <span>Delivery phone</span>
+                                <strong>
+                                  {{
+                                    order.deliveryPhone ||
+                                    order.customerPhone ||
+                                    'Not provided'
+                                  }}
+                                </strong>
+                              </div>
+
+                              <div class="delivery-field delivery-field-wide">
+                                <span>Complete address</span>
+                                <strong>
+                                  {{ order.deliveryAddressLine1 }}
+                                  @if (order.deliveryAddressLine2) {
+                                    <br />{{ order.deliveryAddressLine2 }}
+                                  }
+                                  @if (order.deliveryLandmark) {
+                                    <br />Near {{ order.deliveryLandmark }}
+                                  }
+                                  <br />
+                                  {{ order.deliveryCity }},
+                                  {{ order.deliveryState }} -
+                                  {{ order.deliveryPostalCode }}
+                                </strong>
+                              </div>
+
+                              @if (order.deliveryInstructions) {
+                                <div class="delivery-field delivery-field-wide delivery-note">
+                                  <span>Delivery instructions</span>
+                                  <strong>{{ order.deliveryInstructions }}</strong>
+                                </div>
+                              }
+                            </div>
+                          } @else {
+                            <div class="delivery-details-unavailable">
+                              Address snapshot is unavailable for this older order.
+                            </div>
+                          }
+                        </section>
+
+                        <div class="items-table-container">
+                          <table class="items-table">
+                            <thead>
+                              <tr>
+                                <th scope="col">
+                                  Food item
+                                </th>
+
+                                <th scope="col">
+                                  Unit price
+                                </th>
+
+                                <th scope="col">
+                                  Quantity
+                                </th>
+
+                                <th scope="col">
+                                  Subtotal
+                                </th>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                              @for (
+                                item of order.items;
+                                track item.foodItemId
+                              ) {
+                                <tr>
+                                  <td data-label="Food item">
+                                    <div class="ordered-item">
+                                      <span
+                                        class="ordered-item-icon"
+                                        aria-hidden="true"
+                                      >
+                                        <svg
+                                          viewBox="0 0 24 24"
+                                          focusable="false"
+                                        >
+                                          <path
+                                            d="M7 3v7M4.5 3v4.5A2.5 2.5 0 0 0 7 10m0 0v11M19 3v18m0-18c-2.2 0-4 2.7-4 6s1.8 5 4 5"
+                                          />
+                                        </svg>
+                                      </span>
+
+                                      <strong>
+                                        {{ item.foodItemName }}
+                                      </strong>
+                                    </div>
+                                  </td>
+
+                                  <td data-label="Unit price">
+                                    {{
+                                      item.unitPrice
+                                        | currency:
+                                          'INR':
+                                          'symbol':
+                                          '1.2-2'
+                                    }}
+                                  </td>
+
+                                  <td data-label="Quantity">
+                                    <span class="quantity-badge">
+                                      {{ item.quantity }}
+                                    </span>
+                                  </td>
+
+                                  <td
+                                    class="item-subtotal"
+                                    data-label="Subtotal"
+                                  >
+                                    {{
+                                      item.unitPrice *
+                                        item.quantity
+                                        | currency:
+                                          'INR':
+                                          'symbol':
+                                          '1.2-2'
+                                    }}
+                                  </td>
+                                </tr>
+                              }
+                            </tbody>
+
+                            <tfoot>
+                              <tr>
+                                <th
+                                  scope="row"
+                                  colspan="3"
+                                >
+                                  Order total
+                                </th>
+
+                                <td>
+                                  {{
+                                    order.totalAmount
+                                      | currency:
+                                        'INR':
+                                        'symbol':
+                                        '1.2-2'
+                                  }}
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      </section>
+                    </td>
+                  </tr>
+                }
+
+                @if (
+                  editingOrderId() === order.id
+                ) {
+                  <tr class="status-editor-row">
+                    <td colspan="7">
+                      <section
+                        class="status-editor-panel"
+                        [id]="
+                          'status-editor-' + order.id
+                        "
+                        [attr.aria-labelledby]="
+                          'status-editor-heading-' +
+                          order.id
+                        "
+                      >
+                        <div class="status-editor-heading">
+                          <div>
+                            <p class="eyebrow">
+                              Order workflow
+                            </p>
+
+                            <h3
+                              [id]="
+                                'status-editor-heading-' +
+                                order.id
+                              "
+                            >
+                              Update Order #{{ order.id }}
+                            </h3>
+                          </div>
+
+                          <p>
+                            Current status:
+
+                            <span
+                              [class]="
+                                'status-badge ' +
+                                getOrderStatusClass(
+                                  order.orderStatus
+                                )
+                              "
+                            >
+                              <span
+                                class="status-dot"
+                                aria-hidden="true"
+                              ></span>
+
+                              {{ order.orderStatus }}
+                            </span>
+                          </p>
+                        </div>
+
+                        @if (updateErrorMessage()) {
+                          <div
+                            class="operation-message error-message"
+                            role="alert"
+                          >
+                            <span
+                              class="message-icon"
+                              aria-hidden="true"
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                focusable="false"
+                              >
+                                <path
+                                  d="M12 8v5m0 3h.01M4 20h16L12 4 4 20Z"
+                                />
+                              </svg>
+                            </span>
+
+                            <div class="message-content">
+                              <strong>
+                                Status could not be updated
+                              </strong>
+
+                              <p>
+                                {{ updateErrorMessage() }}
+                              </p>
+
+                              @if (
+                                updateValidationErrors()
+                                  .length > 0
+                              ) {
+                                <ul class="validation-error-list">
+                                  @for (
+                                    validationError of
+                                      updateValidationErrors();
+                                    track $index
+                                  ) {
+                                    <li>
+                                      {{ validationError }}
+                                    </li>
+                                  }
+                                </ul>
+                              }
+                            </div>
+                          </div>
+                        }
+
+                        <div class="status-edit-form">
+                          <div class="status-select-field">
+                            <label
+                              [for]="
+                                'new-order-status-' +
+                                order.id
+                              "
+                            >
+                              New order status
+                            </label>
+
+                            <div class="status-select-container">
+                              <span
+                                class="status-select-icon"
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  focusable="false"
+                                >
+                                  <path
+                                    d="M5 5h14v4H5V5Zm0 10h14v4H5v-4Zm0-5h14v4H5v-4Z"
+                                  />
+                                </svg>
+                              </span>
+
+                              <select
+                                [id]="
+                                  'new-order-status-' +
+                                  order.id
+                                "
+                                [value]="selectedOrderStatus()"
+                                (change)="
+                                  updateSelectedOrderStatus(
+                                    $event
+                                  )
+                                "
+                              >
+                                <option value="">
+                                  Select a status
+                                </option>
+
+                                @for (
+                                  orderStatus of orderStatuses;
+                                  track orderStatus
+                                ) {
+                                  <option [value]="orderStatus">
+                                    {{ orderStatus }}
+                                  </option>
+                                }
+                              </select>
+
+                              <span
+                                class="select-arrow"
+                                aria-hidden="true"
+                              >
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  focusable="false"
+                                >
+                                  <path d="m7 10 5 5 5-5" />
+                                </svg>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div class="status-editor-actions">
+                            <button
+                              type="button"
+                              class="cancel-button"
+                              [disabled]="
+                                updatingOrderId() !== null
+                              "
+                              (click)="
+                                cancelEditingOrderStatus()
+                              "
+                            >
+                              Cancel
+                            </button>
+
+                            <button
+                              type="button"
+                              class="primary-button"
+                              [disabled]="
+                                isMutationInProgress() ||
+                                !selectedOrderStatus()
+                              "
+                              (click)="
+                                submitOrderStatus(order)
+                              "
+                            >
+                              @if (
+                                updatingOrderId() ===
+                                order.id
+                              ) {
+                                <span
+                                  class="button-spinner"
+                                  aria-hidden="true"
+                                ></span>
+
+                                <span>Saving...</span>
+                              } @else {
+                                <span>Save Status</span>
+
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  aria-hidden="true"
+                                  focusable="false"
+                                >
+                                  <path d="m5 12 4 4L19 6" />
+                                </svg>
+                              }
+                            </button>
+                          </div>
+                        </div>
+                      </section>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+</main>

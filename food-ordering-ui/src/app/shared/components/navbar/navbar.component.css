@@ -1,0 +1,214 @@
+/* ---------------------------------------------------------
+   APPLICATION NAVBAR
+   --------------------------------------------------------- */
+
+:host {
+  display: block;
+}
+
+/* Displays the shared navigation bar across the application. */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+
+  min-height: 72px;
+  padding: 0 clamp(24px, 6vw, 96px);
+
+  background: rgb(255 255 255 / 96%);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 4px 16px rgb(15 23 42 / 5%);
+
+  font-family: var(--font-family);
+
+  backdrop-filter: blur(12px);
+}
+
+/* Application name shown on the left side. */
+.brand {
+  flex-shrink: 0;
+
+  color: var(--color-primary-700);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+
+  transition:
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.brand:hover {
+  color: var(--color-primary-600);
+  transform: translateY(-1px);
+}
+
+.brand:focus-visible {
+  border-radius: var(--radius-small);
+}
+
+/* Contains all navigation links and the Logout button. */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: clamp(18px, 2.5vw, 30px);
+
+  min-width: 0;
+}
+
+/* Shared style for navigation links. */
+nav a {
+  position: relative;
+
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 72px;
+  padding: 3px 0 0;
+
+  color: var(--color-slate-600);
+  border-bottom: 3px solid transparent;
+
+  font-size: var(--font-size-small);
+  font-weight: 750;
+  white-space: nowrap;
+  text-decoration: none;
+
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+nav a:hover {
+  color: var(--color-primary-700);
+}
+
+/* Applied by Angular's RouterLinkActive directive. */
+nav a.active {
+  color: var(--color-primary-700);
+  border-bottom-color: var(--color-primary-600);
+}
+
+/* Makes the Logout button match the navigation links. */
+.logout-button {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 72px;
+  padding: 3px 0 0;
+
+  color: var(--color-slate-600);
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+
+  font: inherit;
+  font-size: var(--font-size-small);
+  font-weight: 750;
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.logout-button:hover {
+  color: var(--color-primary-700);
+  border-bottom-color: var(--color-primary-200);
+}
+
+/* Provides consistent keyboard navigation styling. */
+nav a:focus-visible,
+.logout-button:focus-visible {
+  outline: 3px solid rgb(249 115 22 / 35%);
+  outline-offset: 4px;
+  border-radius: var(--radius-small);
+}
+
+/* ---------------------------------------------------------
+   TABLET LAYOUT
+   --------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .site-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0;
+
+    padding:
+      16px
+      var(--page-gutter)
+      0;
+  }
+
+  .brand {
+    align-self: flex-start;
+    margin-bottom: 12px;
+  }
+
+  nav {
+    justify-content: flex-start;
+    gap: 24px;
+
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color:
+      var(--color-slate-300)
+      transparent;
+  }
+
+  nav a,
+  .logout-button {
+    min-height: 48px;
+    padding-top: 0;
+  }
+}
+
+/* ---------------------------------------------------------
+   MOBILE LAYOUT
+   --------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  .site-header {
+    padding:
+      14px
+      var(--page-gutter-mobile)
+      0;
+  }
+
+  .brand {
+    font-size: 1.15rem;
+  }
+
+  nav {
+    gap: 20px;
+  }
+
+  nav a,
+  .logout-button {
+    min-height: 46px;
+    font-size: 0.82rem;
+  }
+}
+
+/* ---------------------------------------------------------
+   REDUCED-MOTION ACCESSIBILITY
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .brand,
+  nav a,
+  .logout-button {
+    transition: none;
+  }
+}
