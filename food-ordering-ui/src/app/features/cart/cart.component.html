@@ -552,6 +552,56 @@
               ></textarea>
               <small>{{ deliveryInstructions().length }}/500 characters</small>
             </section>
+
+            <section
+              class="payment-section"
+              aria-labelledby="payment-heading"
+            >
+              <div class="payment-section-header">
+                <div>
+                  <p class="eyebrow">Payment</p>
+                  <h2 id="payment-heading">Choose a payment method</h2>
+                  <p>Select how you will pay for this order.</p>
+                </div>
+                <span class="payment-secure-badge">Available</span>
+              </div>
+
+              <div
+                class="payment-options"
+                role="radiogroup"
+                aria-labelledby="payment-heading"
+              >
+                <label
+                  class="payment-option"
+                  [class.payment-option-selected]="
+                    paymentMethod() === 'CashOnDelivery'
+                  "
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="CashOnDelivery"
+                    [checked]="paymentMethod() === 'CashOnDelivery'"
+                    [disabled]="isCheckingOut()"
+                    (change)="selectPaymentMethod('CashOnDelivery')"
+                  />
+                  <span class="payment-option-icon" aria-hidden="true">
+                    COD
+                  </span>
+                  <span class="payment-option-copy">
+                    <strong>Cash on Delivery</strong>
+                    <small>
+                      Pay with cash when your order reaches the delivery address.
+                    </small>
+                  </span>
+                  <span class="payment-option-status">Selected</span>
+                </label>
+              </div>
+
+              <p class="payment-help">
+                Payment status will remain Pending until the cash is collected.
+              </p>
+            </section>
           </div>
 
           <aside class="order-summary" aria-labelledby="summary-heading">
@@ -583,6 +633,12 @@
                 } @else {
                   <strong class="missing-address">Select an address</strong>
                 }
+              </div>
+              <div class="summary-row">
+                <span>Payment</span>
+                <strong class="payment-summary-value">
+                  Cash on Delivery
+                </strong>
               </div>
 
               <div class="summary-divider"></div>

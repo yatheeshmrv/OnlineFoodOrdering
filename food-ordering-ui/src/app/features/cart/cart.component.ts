@@ -11,14 +11,20 @@ import {
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import {
+  Router,
+  RouterLink
+} from '@angular/router';
 import { finalize } from 'rxjs';
 
 import {
   Cart as CartModel,
   CartItem
 } from '../../Core/models/cart.model';
-import { CheckoutRequest } from '../../Core/models/order.model';
+import {
+  CheckoutRequest,
+  PaymentMethod
+} from '../../Core/models/order.model';
 import {
   SaveUserAddressRequest,
   UserAddress
@@ -33,7 +39,10 @@ import { UserAddressService } from '../../Core/services/user-address.service';
     RouterLink
   ],
   templateUrl: './cart.component.html',
-  styleUrl: './cart.component.css'
+  styleUrls: [
+    './cart.component.css',
+    './cart-payment.component.css'
+  ]
 })
 export class Cart implements OnInit {
   private readonly cartService = inject(CartService);
@@ -41,6 +50,7 @@ export class Cart implements OnInit {
     inject(UserAddressService);
   private readonly formBuilder = inject(FormBuilder);
 
+  private readonly router = inject(Router);
   readonly cart = signal<CartModel | null>(null);
   readonly isLoading = signal(true);
   readonly errorMessage = signal('');
@@ -65,6 +75,8 @@ export class Cart implements OnInit {
 
   readonly deliveryInstructions = signal('');
 
+  readonly paymentMethod =
+    signal<PaymentMethod>('CashOnDelivery');
   readonly addressForm = this.formBuilder.nonNullable.group({
     addressLabel: [
       '',
@@ -551,6 +563,15 @@ export class Cart implements OnInit {
     const textarea = event.target as HTMLTextAreaElement;
     this.deliveryInstructions.set(textarea.value);
   }
+  selectPaymentMethod(paymentMethod: PaymentMethod): void {
+    if (this.isCheckingOut()) {
+      return;
+    }
+
+    this.paymentMethod.set(paymentMethod);
+    this.checkoutErrorMessage.set('');
+  }
+
 
   checkout(): void {
     const currentCart = this.cart();
@@ -584,7 +605,8 @@ export class Cart implements OnInit {
     const request: CheckoutRequest = {
       userAddressId: selectedAddress.id,
       deliveryInstructions:
-        normalizedInstructions || null
+        normalizedInstructions || null,
+      paymentMethod: this.paymentMethod()
     };
 
     this.isCheckingOut.set(true);
@@ -620,6 +642,11 @@ export class Cart implements OnInit {
           });
 
           this.deliveryInstructions.set('');
+
+          void this.router.navigate([
+            '/order-confirmation',
+            response.order.id
+          ]);
         },
         error: (error: HttpErrorResponse) => {
           this.checkoutErrorMessage.set(

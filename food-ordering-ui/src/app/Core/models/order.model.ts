@@ -1,23 +1,19 @@
 /**
- * Represents one food item included in an order request.
+ * Payment methods currently accepted by the checkout API.
  *
- * This model is retained for compatibility with any existing
- * OrderService code that still references CreateOrderRequest.
+ * Add new values here when the backend begins supporting
+ * additional payment options.
  */
-export interface OrderItemRequest {
-  foodItemId: number;
-  quantity: number;
-}
+export type PaymentMethod = 'CashOnDelivery';
 
 /**
- * Legacy direct-order request model.
- *
- * Cart checkout now uses CheckoutRequest instead. This interface
- * remains temporarily so existing unused code does not break.
+ * Payment states returned by the backend for an order.
  */
-export interface CreateOrderRequest {
-  items: OrderItemRequest[];
-}
+export type PaymentStatus =
+  | 'Pending'
+  | 'Paid'
+  | 'Failed'
+  | 'Refunded';
 
 /**
  * Request sent to POST /api/Cart/checkout.
@@ -25,6 +21,7 @@ export interface CreateOrderRequest {
 export interface CheckoutRequest {
   userAddressId: number;
   deliveryInstructions: string | null;
+  paymentMethod: PaymentMethod;
 }
 
 /**
@@ -49,9 +46,10 @@ export interface Order {
   customerPhone: string | null;
   totalAmount: number;
   orderStatus: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
   orderDate: string;
   items: OrderItem[];
-
   deliveryRecipientName: string | null;
   deliveryPhone: string | null;
   deliveryAddressLine1: string | null;

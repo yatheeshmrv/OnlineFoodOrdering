@@ -1,0 +1,271 @@
+<main class="confirmation-page">
+  <div class="confirmation-container">
+    @if (isLoading()) {
+      <section
+        class="state-card loading-state"
+        role="status"
+        aria-live="polite"
+      >
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <div>
+          <h1>Loading your order</h1>
+          <p>Please wait while we prepare the confirmation details.</p>
+        </div>
+      </section>
+    } @else if (errorMessage()) {
+      <section class="state-card error-state" role="alert">
+        <div class="state-icon" aria-hidden="true">!</div>
+        <div class="state-copy">
+          <h1>Unable to show confirmation</h1>
+          <p>{{ errorMessage() }}</p>
+        </div>
+        <div class="state-actions">
+          <button
+            type="button"
+            class="retry-button"
+            (click)="loadOrder()"
+          >
+            Try Again
+          </button>
+          <a routerLink="/my-orders" class="secondary-link">
+            View My Orders
+          </a>
+        </div>
+      </section>
+    } @else {
+      @if (order(); as confirmedOrder) {
+        <section
+          class="confirmation-hero"
+          aria-labelledby="confirmation-heading"
+        >
+          <div class="success-mark" aria-hidden="true">✓</div>
+
+          <div class="hero-copy">
+            <p class="eyebrow">Order confirmed</p>
+            <h1 id="confirmation-heading">
+              Thank you. Your order has been placed.
+            </h1>
+            <p class="hero-description">
+              Order #{{ confirmedOrder.id }} was received successfully.
+              You can review the complete order below.
+            </p>
+
+            <div class="hero-meta">
+              <span>
+                Placed
+                <strong>
+                  {{ confirmedOrder.orderDate | date:'medium' }}
+                </strong>
+              </span>
+              <span>
+                Total
+                <strong>
+                  {{
+                    confirmedOrder.totalAmount
+                      | currency:'INR':'symbol':'1.2-2'
+                  }}
+                </strong>
+              </span>
+            </div>
+          </div>
+
+          <div class="hero-order-card">
+            <span>Order number</span>
+            <strong>#{{ confirmedOrder.id }}</strong>
+            <small>
+              {{ totalItemQuantity() }}
+              {{ totalItemQuantity() === 1 ? 'item' : 'items' }}
+            </small>
+          </div>
+        </section>
+
+        <section class="confirmation-layout">
+          <div class="confirmation-main">
+            <section
+              class="details-card items-card"
+              aria-labelledby="items-heading"
+            >
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">Order contents</p>
+                  <h2 id="items-heading">Ordered items</h2>
+                </div>
+                <span class="item-count">
+                  {{ confirmedOrder.items.length }}
+                  {{ confirmedOrder.items.length === 1 ? 'line item' : 'line items' }}
+                </span>
+              </div>
+
+              <div class="items-list">
+                @for (
+                  item of confirmedOrder.items;
+                  track item.foodItemId
+                ) {
+                  <article class="order-item">
+                    <div class="item-visual" aria-hidden="true">
+                      <span></span>
+                    </div>
+                    <div class="item-copy">
+                      <h3>{{ item.foodItemName }}</h3>
+                      <p>
+                        {{ item.unitPrice | currency:'INR':'symbol':'1.2-2' }}
+                        × {{ item.quantity }}
+                      </p>
+                    </div>
+                    <strong class="item-subtotal">
+                      {{
+                        item.unitPrice * item.quantity
+                          | currency:'INR':'symbol':'1.2-2'
+                      }}
+                    </strong>
+                  </article>
+                }
+              </div>
+            </section>
+
+            <section
+              class="details-card delivery-card"
+              aria-labelledby="delivery-heading"
+            >
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">Delivery</p>
+                  <h2 id="delivery-heading">Delivery address</h2>
+                </div>
+              </div>
+
+              @if (confirmedOrder.deliveryAddressLine1) {
+                <div class="delivery-content">
+                  <div class="delivery-person">
+                    <strong>
+                      {{
+                        confirmedOrder.deliveryRecipientName ||
+                        confirmedOrder.customerName
+                      }}
+                    </strong>
+                    <span>
+                      {{
+                        confirmedOrder.deliveryPhone ||
+                        confirmedOrder.customerPhone ||
+                        'Phone number unavailable'
+                      }}
+                    </span>
+                  </div>
+
+                  <address>
+                    {{ confirmedOrder.deliveryAddressLine1 }}
+                    @if (confirmedOrder.deliveryAddressLine2) {
+                      <br />
+                      {{ confirmedOrder.deliveryAddressLine2 }}
+                    }
+                    @if (confirmedOrder.deliveryLandmark) {
+                      <br />
+                      Near {{ confirmedOrder.deliveryLandmark }}
+                    }
+                    <br />
+                    {{ confirmedOrder.deliveryCity }},
+                    {{ confirmedOrder.deliveryState }} -
+                    {{ confirmedOrder.deliveryPostalCode }}
+                  </address>
+
+                  <div class="instructions-box">
+                    <span>Delivery instructions</span>
+                    <strong>
+                      {{
+                        confirmedOrder.deliveryInstructions ||
+                        'No delivery instructions provided.'
+                      }}
+                    </strong>
+                  </div>
+                </div>
+              } @else {
+                <div class="unavailable-message">
+                  Delivery address information is unavailable for this order.
+                </div>
+              }
+            </section>
+          </div>
+
+          <aside
+            class="confirmation-summary"
+            aria-labelledby="summary-heading"
+          >
+            <div class="summary-heading">
+              <p class="eyebrow">Confirmation</p>
+              <h2 id="summary-heading">Order summary</h2>
+            </div>
+
+            <div class="summary-details">
+              <div class="summary-row">
+                <span>Order number</span>
+                <strong>#{{ confirmedOrder.id }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Order status</span>
+                <strong
+                  class="status-value"
+                  [class.status-pending]="confirmedOrder.orderStatus === 'Pending'"
+                  [class.status-confirmed]="confirmedOrder.orderStatus === 'Confirmed'"
+                  [class.status-preparing]="confirmedOrder.orderStatus === 'Preparing'"
+                  [class.status-out-for-delivery]="confirmedOrder.orderStatus === 'Out for Delivery'"
+                  [class.status-delivered]="confirmedOrder.orderStatus === 'Delivered'"
+                  [class.status-cancelled]="confirmedOrder.orderStatus === 'Cancelled'"
+                >
+                  {{ confirmedOrder.orderStatus }}
+                </strong>
+              </div>
+              <div class="summary-row">
+                <span>Payment method</span>
+                <strong>
+                  {{ formatPaymentMethod(confirmedOrder.paymentMethod) }}
+                </strong>
+              </div>
+              <div class="summary-row">
+                <span>Payment status</span>
+                <strong
+                  class="payment-status"
+                  [class.payment-paid]="confirmedOrder.paymentStatus === 'Paid'"
+                  [class.payment-failed]="confirmedOrder.paymentStatus === 'Failed'"
+                  [class.payment-refunded]="confirmedOrder.paymentStatus === 'Refunded'"
+                >
+                  {{ formatPaymentStatus(confirmedOrder.paymentStatus) }}
+                </strong>
+              </div>
+              <div class="summary-row">
+                <span>Total quantity</span>
+                <strong>{{ totalItemQuantity() }}</strong>
+              </div>
+
+              <div class="summary-divider"></div>
+
+              <div class="summary-row total-row">
+                <span>Total amount</span>
+                <strong>
+                  {{
+                    confirmedOrder.totalAmount
+                      | currency:'INR':'symbol':'1.2-2'
+                  }}
+                </strong>
+              </div>
+            </div>
+
+            <a routerLink="/my-orders" class="primary-link">
+              View My Orders
+              <span aria-hidden="true">→</span>
+            </a>
+            <a
+              [routerLink]="['/my-orders', confirmedOrder.id]"
+              class="order-details-link"
+            >
+              Open order details
+            </a>
+
+            <p class="summary-note">
+              Cash on Delivery remains pending until payment is collected.
+            </p>
+          </aside>
+        </section>
+      }
+    }
+  </div>
+</main>

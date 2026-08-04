@@ -6,8 +6,6 @@ import {
 import { Observable } from 'rxjs';
 
 import {
-  CreateOrderRequest,
-  CreateOrderResponse,
   Order,
   UpdateOrderStatusRequest
 } from '../models/order.model';
@@ -18,23 +16,12 @@ import {
 })
 export class OrderService {
   private readonly httpClient = inject(HttpClient);
-
   private readonly apiUrl =
     'https://localhost:7068/api/Order';
 
   // ---------------------------------------------------------
   // CUSTOMER ORDER OPERATIONS
   // ---------------------------------------------------------
-
-  // Creates an order for the currently logged-in customer.
-  createOrder(
-    request: CreateOrderRequest
-  ): Observable<CreateOrderResponse> {
-    return this.httpClient.post<CreateOrderResponse>(
-      this.apiUrl,
-      request
-    );
-  }
 
   // Retrieves all orders belonging to the logged-in customer.
   getMyOrders(): Observable<Order[]> {

@@ -12,6 +12,7 @@ import { Cart } from './features/cart/cart.component';
 import { Home } from './features/home/home.component';
 import { Menu } from './features/menu/menu.component';
 import { MyOrders } from './features/my-orders/my-orders.component';
+import { OrderConfirmation } from './features/order-confirmation/order-confirmation.component';
 import { OrderDetails } from './features/order-details/order-details.component';
 
 export const routes: Routes = [
@@ -42,13 +43,17 @@ export const routes: Routes = [
     title: 'Cart | Food Ordering'
   },
   {
+    path: 'order-confirmation/:orderId',
+    component: OrderConfirmation,
+    canActivate: [authGuard],
+    title: 'Order Confirmation | Food Ordering'
+  },
+  {
     path: 'my-orders/:orderId',
     component: OrderDetails,
-
     // Protects individual customer orders.
     // The backend must also verify order ownership.
     canActivate: [authGuard],
-
     title: 'Order Details | Food Ordering'
   },
   {
@@ -57,7 +62,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
     title: 'My Orders | Food Ordering'
   },
-
   // Specific Admin routes must appear before /admin.
   {
     path: 'admin/food-items',
@@ -83,7 +87,6 @@ export const routes: Routes = [
     canActivate: [adminGuard],
     title: 'Admin Dashboard | Food Ordering'
   },
-
   // Redirects unknown URLs to the Home page.
   // Wildcard routes must always remain last.
   {
