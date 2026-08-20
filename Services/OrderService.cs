@@ -216,11 +216,13 @@ namespace FoodOrderAPI.Services
                 Items = order.OrderItems
                     .Select(item => new OrderItemDto
                     {
-                        FoodItemId = item.FoodItemId,
-
                         FoodItemName =
-                            item.FoodItem?.Name ??
-                            string.Empty,
+                        item.FoodItem?.Name ??
+                        string.Empty,
+
+                        ImageUrl =
+                        item.FoodItem?.ImageUrl ??
+                        string.Empty,
 
                         Quantity = item.Quantity,
                         UnitPrice = item.UnitPrice

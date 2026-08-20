@@ -270,12 +270,18 @@
                   track item.foodItemId
                 ) {
                   <div class="order-item">
-                    <div
-                      class="item-visual"
-                      aria-hidden="true"
-                    >
-                      🍲
-                    </div>
+                    <div class="item-visual">
+  @if (item.imageUrl) {
+    <img
+      class="order-item-image"
+      [src]="item.imageUrl"
+      [alt]="item.foodItemName"
+      loading="lazy"
+    />
+  } @else {
+    <span aria-hidden="true">🍲</span>
+  }
+</div>
 
                     <div class="item-information">
                       <h4>

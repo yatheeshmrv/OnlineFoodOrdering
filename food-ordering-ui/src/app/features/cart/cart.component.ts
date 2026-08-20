@@ -321,11 +321,19 @@ export class Cart implements OnInit {
   }
 
   clearCart(): void {
-    if (this.isCartEmpty() || this.isClearing()) {
-      return;
-    }
+  if (this.isCartEmpty() || this.isClearing()) {
+    return;
+  }
 
-    this.isClearing.set(true);
+  const confirmed = window.confirm(
+    'Are you sure you want to remove all items from your cart?'
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  this.isClearing.set(true);
     this.errorMessage.set('');
 
     this.cartService

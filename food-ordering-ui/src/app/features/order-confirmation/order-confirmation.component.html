@@ -102,9 +102,18 @@
                   track item.foodItemId
                 ) {
                   <article class="order-item">
-                    <div class="item-visual" aria-hidden="true">
-                      <span></span>
-                    </div>
+                    <div class="item-visual">
+  @if (item.imageUrl) {
+    <img
+      class="order-item-image"
+      [src]="item.imageUrl"
+      [alt]="item.foodItemName"
+      loading="lazy"
+    />
+  } @else {
+    <span aria-hidden="true"></span>
+  }
+</div>
                     <div class="item-copy">
                       <h3>{{ item.foodItemName }}</h3>
                       <p>

@@ -30,6 +30,7 @@ export interface CheckoutRequest {
 export interface OrderItem {
   foodItemId: number;
   foodItemName: string;
+  imageUrl: string;
   quantity: number;
   unitPrice: number;
 }
