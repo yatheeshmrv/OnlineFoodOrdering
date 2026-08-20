@@ -1019,6 +1019,15 @@ tbody:last-child tr:last-child td {
   background: var(--color-primary-50, #fff7ed);
   flex: 0 0 auto;
   place-items: center;
+  overflow: hidden;
+}
+
+.admin-food-item-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .item-icon svg {

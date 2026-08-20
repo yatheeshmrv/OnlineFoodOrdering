@@ -768,13 +768,20 @@
                           </span>
                         </div>
 
+                        <!-- Delivery details -->
                         <section
                           class="delivery-details-card"
                           aria-label="Delivery address"
                         >
                           <div class="delivery-details-heading">
-                            <span class="delivery-details-icon" aria-hidden="true">
-                              <svg viewBox="0 0 24 24" focusable="false">
+                            <span
+                              class="delivery-details-icon"
+                              aria-hidden="true"
+                            >
+                              <svg
+                                viewBox="0 0 24 24"
+                                focusable="false"
+                              >
                                 <path
                                   d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Zm-8-3a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"
                                 />
@@ -791,6 +798,7 @@
                             <div class="delivery-details-grid">
                               <div class="delivery-field">
                                 <span>Recipient</span>
+
                                 <strong>
                                   {{
                                     order.deliveryRecipientName ||
@@ -801,6 +809,7 @@
 
                               <div class="delivery-field">
                                 <span>Delivery phone</span>
+
                                 <strong>
                                   {{
                                     order.deliveryPhone ||
@@ -810,37 +819,155 @@
                                 </strong>
                               </div>
 
-                              <div class="delivery-field delivery-field-wide">
+                              <div
+                                class="
+                                  delivery-field
+                                  delivery-field-wide
+                                "
+                              >
                                 <span>Complete address</span>
+
                                 <strong>
                                   {{ order.deliveryAddressLine1 }}
-                                  @if (order.deliveryAddressLine2) {
-                                    <br />{{ order.deliveryAddressLine2 }}
+
+                                  @if (
+                                    order.deliveryAddressLine2
+                                  ) {
+                                    <br />
+                                    {{
+                                      order.deliveryAddressLine2
+                                    }}
                                   }
-                                  @if (order.deliveryLandmark) {
-                                    <br />Near {{ order.deliveryLandmark }}
+
+                                  @if (
+                                    order.deliveryLandmark
+                                  ) {
+                                    <br />
+                                    Near {{
+                                      order.deliveryLandmark
+                                    }}
                                   }
+
                                   <br />
+
                                   {{ order.deliveryCity }},
                                   {{ order.deliveryState }} -
                                   {{ order.deliveryPostalCode }}
                                 </strong>
                               </div>
 
-                              @if (order.deliveryInstructions) {
-                                <div class="delivery-field delivery-field-wide delivery-note">
-                                  <span>Delivery instructions</span>
-                                  <strong>{{ order.deliveryInstructions }}</strong>
+                              @if (
+                                order.deliveryInstructions
+                              ) {
+                                <div
+                                  class="
+                                    delivery-field
+                                    delivery-field-wide
+                                    delivery-note
+                                  "
+                                >
+                                  <span>
+                                    Delivery instructions
+                                  </span>
+
+                                  <strong>
+                                    {{
+                                      order.deliveryInstructions
+                                    }}
+                                  </strong>
                                 </div>
                               }
                             </div>
                           } @else {
-                            <div class="delivery-details-unavailable">
-                              Address snapshot is unavailable for this older order.
+                            <div
+                              class="
+                                delivery-details-unavailable
+                              "
+                            >
+                              Address snapshot is unavailable for
+                              this older order.
                             </div>
                           }
                         </section>
 
+                        <!-- Payment details -->
+                        <section
+                          class="delivery-details-card"
+                          aria-label="Payment information"
+                        >
+                          <div class="delivery-details-heading">
+                            <span
+                              class="delivery-details-icon"
+                              aria-hidden="true"
+                            >
+                              ₹
+                            </span>
+
+                            <div>
+                              <p class="eyebrow">
+                                Payment
+                              </p>
+
+                              <h4>
+                                Payment information
+                              </h4>
+                            </div>
+                          </div>
+
+                          <div class="delivery-details-grid">
+                            <div class="delivery-field">
+                              <span>
+                                Payment method
+                              </span>
+
+                              <strong>
+                                {{
+                                  order.paymentMethod ===
+                                  'CashOnDelivery'
+                                    ? 'Cash on Delivery'
+                                    : order.paymentMethod
+                                }}
+                              </strong>
+                            </div>
+
+                            <div class="delivery-field">
+                              <span>
+                                Payment status
+                              </span>
+
+                              <strong>
+                                <span
+                                  class="status-badge"
+                                  [class.status-pending]="
+                                    order.paymentStatus ===
+                                    'Pending'
+                                  "
+                                  [class.status-delivered]="
+                                    order.paymentStatus ===
+                                    'Paid'
+                                  "
+                                  [class.status-cancelled]="
+                                    order.paymentStatus ===
+                                    'Failed'
+                                  "
+                                  [class.status-unknown]="
+                                    order.paymentStatus ===
+                                    'Refunded'
+                                  "
+                                >
+                                  <span
+                                    class="status-dot"
+                                    aria-hidden="true"
+                                  ></span>
+
+                                  {{ order.paymentStatus }}
+                                </span>
+                              </strong>
+                            </div>
+                          </div>
+                        </section>
+
+                        <!-- Ordered items -->
                         <div class="items-table-container">
                           <table class="items-table">
                             <thead>
@@ -1005,7 +1132,10 @@
 
                         @if (updateErrorMessage()) {
                           <div
-                            class="operation-message error-message"
+                            class="
+                              operation-message
+                              error-message
+                            "
                             role="alert"
                           >
                             <span
@@ -1035,7 +1165,11 @@
                                 updateValidationErrors()
                                   .length > 0
                               ) {
-                                <ul class="validation-error-list">
+                                <ul
+                                  class="
+                                    validation-error-list
+                                  "
+                                >
                                   @for (
                                     validationError of
                                       updateValidationErrors();
@@ -1062,7 +1196,11 @@
                               New order status
                             </label>
 
-                            <div class="status-select-container">
+                            <div
+                              class="
+                                status-select-container
+                              "
+                            >
                               <span
                                 class="status-select-icon"
                                 aria-hidden="true"
@@ -1082,7 +1220,9 @@
                                   'new-order-status-' +
                                   order.id
                                 "
-                                [value]="selectedOrderStatus()"
+                                [value]="
+                                  selectedOrderStatus()
+                                "
                                 (change)="
                                   updateSelectedOrderStatus(
                                     $event
@@ -1094,10 +1234,13 @@
                                 </option>
 
                                 @for (
-                                  orderStatus of orderStatuses;
+                                  orderStatus of
+                                    orderStatuses;
                                   track orderStatus
                                 ) {
-                                  <option [value]="orderStatus">
+                                  <option
+                                    [value]="orderStatus"
+                                  >
                                     {{ orderStatus }}
                                   </option>
                                 }
@@ -1111,7 +1254,9 @@
                                   viewBox="0 0 24 24"
                                   focusable="false"
                                 >
-                                  <path d="m7 10 5 5 5-5" />
+                                  <path
+                                    d="m7 10 5 5 5-5"
+                                  />
                                 </svg>
                               </span>
                             </div>
@@ -1160,7 +1305,9 @@
                                   aria-hidden="true"
                                   focusable="false"
                                 >
-                                  <path d="m5 12 4 4L19 6" />
+                                  <path
+                                    d="m5 12 4 4L19 6"
+                                  />
                                 </svg>
                               }
                             </button>
