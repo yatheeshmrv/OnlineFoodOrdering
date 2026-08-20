@@ -20,12 +20,33 @@ namespace OnlineFoodOrdering
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // ---------------------------------------------------------
+            // CORS CONFIGURATION
+            // ---------------------------------------------------------
+
             // Name of the CORS policy used by the Angular frontend.
             const string AngularFrontendPolicy =
                 "AngularFrontendPolicy";
 
-            // Allows the Angular development application
-            // to call this API.
+            // Reads the allowed frontend origins from configuration.
+            //
+            // Development:
+            // appsettings.Development.json
+            //
+            // Production:
+            // appsettings.json or deployment environment variables.
+            var allowedOrigins =
+                builder.Configuration
+                    .GetSection("Cors:AllowedOrigins")
+                    .Get<string[]>()
+                ?? Array.Empty<string>();
+
+            if (allowedOrigins.Length == 0)
+            {
+                throw new InvalidOperationException(
+                    "No CORS allowed origins have been configured.");
+            }
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy(
@@ -33,8 +54,7 @@ namespace OnlineFoodOrdering
                     policy =>
                     {
                         policy
-                            .WithOrigins(
-                                "http://localhost:4200")
+                            .WithOrigins(allowedOrigins)
                             .AllowAnyHeader()
                             .AllowAnyMethod();
                     });
@@ -324,8 +344,10 @@ namespace OnlineFoodOrdering
             // Redirects HTTP requests to HTTPS.
             app.UseHttpsRedirection();
 
-            // Applies the Angular frontend CORS policy.
-            // It must run before authentication
+            // Applies the configured Angular frontend
+            // CORS policy.
+            //
+            // This must run before authentication
             // and authorization.
             app.UseCors(AngularFrontendPolicy);
 
