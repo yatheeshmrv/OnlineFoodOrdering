@@ -13,6 +13,9 @@
         // Food item price.
         public decimal Price { get; set; }
 
+        // Image URL/path displayed by the frontend.
+        public string ImageUrl { get; set; } = string.Empty;
+
         // Foreign key category id.
         public int FoodCategoryId { get; set; }
 

@@ -131,6 +131,7 @@ namespace FoodOrderAPI.Repositories
             existingFoodItem.Description =
                 foodItem.Description;
             existingFoodItem.Price = foodItem.Price;
+            existingFoodItem.ImageUrl = foodItem.ImageUrl;
             existingFoodItem.FoodCategoryId =
                 foodItem.FoodCategoryId;
             existingFoodItem.IsAvailable =

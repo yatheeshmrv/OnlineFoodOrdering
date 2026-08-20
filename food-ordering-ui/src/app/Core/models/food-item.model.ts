@@ -4,6 +4,7 @@ export interface FoodItem {
   name: string;
   description: string;
   price: number;
+  imageUrl: string;
   foodCategoryId: number;
   foodCategoryName: string;
   isAvailable: boolean;
@@ -26,17 +27,17 @@ export interface CreateFoodItemRequest {
   name: string;
   description: string;
   price: number;
+  imageUrl: string;
   foodCategoryId: number;
   isAvailable: boolean;
 }
 
 // Matches the backend UpdateFoodItemDto.
-// It remains separate from CreateFoodItemRequest so either
-// backend contract can evolve independently later.
 export interface UpdateFoodItemRequest {
   name: string;
   description: string;
   price: number;
+  imageUrl: string;
   foodCategoryId: number;
   isAvailable: boolean;
 }

@@ -13,6 +13,9 @@
         // Updated price of the food item.
         public decimal Price { get; set; }
 
+        // Updated image URL or relative image path.
+        public string ImageUrl { get; set; } = string.Empty;
+
         // ID of the category to which the item belongs.
         public int FoodCategoryId { get; set; }
 

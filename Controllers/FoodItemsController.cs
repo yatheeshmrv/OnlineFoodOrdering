@@ -190,12 +190,13 @@ namespace FoodOrderAPI.Controllers
                 Description =
                     createFoodItemDto.Description.Trim(),
 
-                // Sets the validated price.
                 Price = createFoodItemDto.Price,
 
-                // Sets the selected category ID.
+                ImageUrl =
+    (createFoodItemDto.ImageUrl ?? string.Empty).Trim(),
+
                 FoodCategoryId =
-                    createFoodItemDto.FoodCategoryId,
+    createFoodItemDto.FoodCategoryId,
 
                 // The category name is filled when reading the item.
                 FoodCategoryName = null,
@@ -275,12 +276,13 @@ namespace FoodOrderAPI.Controllers
                 Description =
                     updateFoodItemDto.Description.Trim(),
 
-                // Sets the validated price.
                 Price = updateFoodItemDto.Price,
 
-                // Sets the selected category ID.
+                ImageUrl =
+    (updateFoodItemDto.ImageUrl ?? string.Empty).Trim(),
+
                 FoodCategoryId =
-                    updateFoodItemDto.FoodCategoryId,
+    updateFoodItemDto.FoodCategoryId,
 
                 // The category name is filled when reading the item.
                 FoodCategoryName = null,

@@ -78,8 +78,9 @@ namespace FoodOrderAPI.Services
                 Name = foodItem.Name,
                 Description = foodItem.Description,
                 Price = foodItem.Price,
+                ImageUrl = foodItem.ImageUrl,
                 FoodCategoryId =
-                    foodItem.FoodCategoryId,
+                foodItem.FoodCategoryId,
 
                 // The category must be loaded with Include()
                 // for its name to be available.
@@ -179,8 +180,10 @@ namespace FoodOrderAPI.Services
                 Description =
                     foodItemDto.Description?.Trim(),
                 Price = foodItemDto.Price,
+                ImageUrl =
+    (foodItemDto.ImageUrl ?? string.Empty).Trim(),
                 FoodCategoryId =
-                    foodItemDto.FoodCategoryId,
+    foodItemDto.FoodCategoryId,
                 IsAvailable =
                     foodItemDto.IsAvailable
             };
@@ -224,8 +227,10 @@ namespace FoodOrderAPI.Services
                 Description =
                     foodItemDto.Description?.Trim(),
                 Price = foodItemDto.Price,
+                ImageUrl =
+    (foodItemDto.ImageUrl ?? string.Empty).Trim(),
                 FoodCategoryId =
-                    foodItemDto.FoodCategoryId,
+    foodItemDto.FoodCategoryId,
                 IsAvailable =
                     foodItemDto.IsAvailable
             };

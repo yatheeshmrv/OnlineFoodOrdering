@@ -124,15 +124,22 @@ export class AdminFoodItems implements OnInit {
       ],
 
       price: [
-        0,
-        [
-          Validators.required,
-          Validators.min(1),
-          Validators.max(10000)
-        ]
-      ],
+  0,
+  [
+    Validators.required,
+    Validators.min(1),
+    Validators.max(10000)
+  ]
+],
 
-      foodCategoryId: [
+imageUrl: [
+  '',
+  [
+    Validators.maxLength(500)
+  ]
+],
+
+foodCategoryId: [
         0,
         [
           Validators.required,
@@ -172,6 +179,12 @@ export class AdminFoodItems implements OnInit {
           Validators.max(10000)
         ]
       ],
+      imageUrl: [
+  '',
+  [
+    Validators.maxLength(500)
+  ]
+],
 
       foodCategoryId: [
         0,
@@ -281,12 +294,13 @@ export class AdminFoodItems implements OnInit {
           );
 
           this.createFoodItemForm.reset({
-            name: '',
-            description: '',
-            price: 0,
-            foodCategoryId: 0,
-            isAvailable: true
-          });
+  name: '',
+  description: '',
+  price: 0,
+  imageUrl: '',
+  foodCategoryId: 0,
+  isAvailable: true
+});
 
           this.isCreating.set(false);
           this.loadFoodItems();
@@ -325,12 +339,13 @@ export class AdminFoodItems implements OnInit {
     this.editingFoodItemId.set(item.id);
 
     this.editFoodItemForm.reset({
-      name: item.name,
-      description: item.description,
-      price: item.price,
-      foodCategoryId: item.foodCategoryId,
-      isAvailable: item.isAvailable
-    });
+  name: item.name,
+  description: item.description,
+  price: item.price,
+  imageUrl: item.imageUrl ?? '',
+  foodCategoryId: item.foodCategoryId,
+  isAvailable: item.isAvailable
+});
   }
 
   /**
@@ -462,12 +477,13 @@ export class AdminFoodItems implements OnInit {
    */
   private resetEditFoodItemForm(): void {
     this.editFoodItemForm.reset({
-      name: '',
-      description: '',
-      price: 0,
-      foodCategoryId: 0,
-      isAvailable: true
-    });
+  name: '',
+  description: '',
+  price: 0,
+  imageUrl: '',
+  foodCategoryId: 0,
+  isAvailable: true
+});
   }
 
   /**

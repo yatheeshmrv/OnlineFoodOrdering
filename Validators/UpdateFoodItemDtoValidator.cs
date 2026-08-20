@@ -10,8 +10,6 @@ namespace FoodOrderAPI.Validators
         // Configures validation rules for UpdateFoodItemDto.
         public UpdateFoodItemDtoValidator()
         {
-            // Ensures the food-item name is provided and
-            // does not exceed 100 characters.
             RuleFor(item => item.Name)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
@@ -20,8 +18,6 @@ namespace FoodOrderAPI.Validators
                 .WithMessage(
                     "Food item name cannot be more than 100 characters.");
 
-            // Ensures the description is provided and
-            // does not exceed 250 characters.
             RuleFor(item => item.Description)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
@@ -30,13 +26,16 @@ namespace FoodOrderAPI.Validators
                 .WithMessage(
                     "Description cannot be more than 250 characters.");
 
-            // Ensures the price is within the permitted range.
             RuleFor(item => item.Price)
                 .InclusiveBetween(1m, 10000m)
                 .WithMessage(
                     "Price must be between 1 and 10000.");
 
-            // Ensures a valid category ID is provided.
+            RuleFor(item => item.ImageUrl)
+                .MaximumLength(500)
+                .WithMessage(
+                    "Image URL cannot be more than 500 characters.");
+
             RuleFor(item => item.FoodCategoryId)
                 .GreaterThan(0)
                 .WithMessage(
