@@ -361,3 +361,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Test coverage reports
+CoverageReport/
+CoverageReportFiltered/
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
