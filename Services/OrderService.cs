@@ -216,6 +216,8 @@ namespace FoodOrderAPI.Services
                 Items = order.OrderItems
                     .Select(item => new OrderItemDto
                     {
+                        FoodItemId = item.FoodItemId,
+
                         FoodItemName =
                         item.FoodItem?.Name ??
                         string.Empty,
