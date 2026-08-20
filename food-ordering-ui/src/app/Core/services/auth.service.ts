@@ -7,6 +7,8 @@ import {
 } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
+
 import {
   LoginRequest,
   LoginResponse,
@@ -30,7 +32,7 @@ export class AuthService {
   private readonly httpClient = inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7068/api/Auth';
+    `${environment.apiUrl}/Auth`;
 
   private readonly tokenStorageKey = 'access_token';
 
@@ -148,6 +150,7 @@ export class AuthService {
         encodedPayload + '='.repeat(paddingLength);
 
       const decodedPayload = atob(paddedPayload);
+
       const parsedPayload: unknown =
         JSON.parse(decodedPayload);
 

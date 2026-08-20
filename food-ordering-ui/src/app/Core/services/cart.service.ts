@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
+
 import {
   AddCartItemRequest,
   Cart,
@@ -19,7 +21,7 @@ export class CartService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7068/api/Cart';
+    `${environment.apiUrl}/Cart`;
 
   /** Gets the logged-in customer's current cart. */
   getCart(): Observable<Cart> {

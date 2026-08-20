@@ -1,9 +1,11 @@
+import { HttpClient } from '@angular/common/http';
 import {
   inject,
   Injectable
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
+import { environment } from '../../../environments/environment';
 
 import {
   CreateFoodItemRequest,
@@ -21,7 +23,7 @@ export class FoodItemService {
 
   // FoodItems endpoint exposed by the ASP.NET Core API.
   private readonly apiUrl =
-    'https://localhost:7068/api/FoodItems';
+    `${environment.apiUrl}/FoodItems`;
 
   // Retrieves a paginated collection of food items from the API.
   getFoodItems(

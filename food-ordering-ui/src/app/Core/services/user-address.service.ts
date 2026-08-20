@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
+
 import {
   SaveUserAddressRequest,
   UserAddress
@@ -14,7 +16,7 @@ export class UserAddressService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7068/api/UserAddresses';
+    `${environment.apiUrl}/UserAddresses`;
 
   /** Gets every saved address belonging to the customer. */
   getAddresses(): Observable<UserAddress[]> {
@@ -43,7 +45,9 @@ export class UserAddressService {
   }
 
   /** Deletes a customer-owned address. */
-  deleteAddress(addressId: number): Observable<void> {
+  deleteAddress(
+    addressId: number
+  ): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/${addressId}`
     );

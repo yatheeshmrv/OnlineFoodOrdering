@@ -1,6 +1,8 @@
-import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+
+import { environment } from '../../../environments/environment';
 
 import {
   CreateFoodCategoryRequest,
@@ -16,7 +18,7 @@ export class FoodCategoryService {
   private readonly httpClient = inject(HttpClient);
 
   private readonly apiUrl =
-    'https://localhost:7068/api/FoodCategory';
+    `${environment.apiUrl}/FoodCategory`;
 
   // Retrieves all food categories.
   getFoodCategories(): Observable<FoodCategory[]> {

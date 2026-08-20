@@ -5,6 +5,8 @@ import {
 } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
+
 import {
   Order,
   UpdateOrderStatusRequest
@@ -16,8 +18,9 @@ import {
 })
 export class OrderService {
   private readonly httpClient = inject(HttpClient);
+
   private readonly apiUrl =
-    'https://localhost:7068/api/Order';
+    `${environment.apiUrl}/Order`;
 
   // ---------------------------------------------------------
   // CUSTOMER ORDER OPERATIONS
