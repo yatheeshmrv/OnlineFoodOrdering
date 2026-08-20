@@ -80,7 +80,7 @@ namespace OnlineFoodOrdering
 
             // Registers ApplicationDbContext and connects it
             // to SQL Server using the DefaultConnection value
-            // from appsettings.json.
+            // from configuration.
             builder.Services.AddDbContext<
                 ApplicationDbContext>(
                     options =>
@@ -317,16 +317,30 @@ namespace OnlineFoodOrdering
             var app = builder.Build();
 
             // ---------------------------------------------------------
-            // HTTP REQUEST PIPELINE
+            // DATABASE MIGRATIONS AND STARTUP SEEDING
             // ---------------------------------------------------------
 
-            // Creates the Admin and Customer roles
-            // when they do not exist.
             using (var scope =
                 app.Services.CreateScope())
             {
-                // Roles must be created before assigning
-                // the Admin role.
+                var database =
+                    scope.ServiceProvider
+                        .GetRequiredService<
+                            ApplicationDbContext>();
+
+                // Applies any pending EF Core migrations when the
+                // application uses a relational database such as
+                // SQL Server.
+                //
+                // The integration tests use EF Core InMemory, so
+                // migrations are intentionally skipped for them.
+                if (database.Database.IsRelational())
+                {
+                    await database.Database.MigrateAsync();
+                }
+
+                // Creates the Admin and Customer roles
+                // when they do not exist.
                 await RoleSeeder.SeedRolesAsync(
                     scope.ServiceProvider);
 
@@ -336,6 +350,10 @@ namespace OnlineFoodOrdering
                     scope.ServiceProvider,
                     builder.Configuration);
             }
+
+            // ---------------------------------------------------------
+            // HTTP REQUEST PIPELINE
+            // ---------------------------------------------------------
 
             // Sends unhandled exceptions
             // to GlobalExceptionHandler.
