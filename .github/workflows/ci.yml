@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend Build and Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore backend dependencies
+        run: dotnet restore ./OnlineFoodOrdering.slnx
+
+      - name: Build backend
+        run: >
+          dotnet build
+          ./OnlineFoodOrdering.slnx
+          --configuration Release
+          --no-restore
+
+      - name: Run backend tests
+        run: >
+          dotnet test
+          ./OnlineFoodOrdering.slnx
+          --configuration Release
+          --no-build
+          --verbosity normal
+
+  frontend:
+    name: Angular Build and Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./food-ordering-ui
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          cache: npm
+          cache-dependency-path: food-ordering-ui/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build Angular application
+        run: npm run build
+
+      - name: Run Angular tests
+        run: npm test -- --watch=false
