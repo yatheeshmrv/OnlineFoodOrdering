@@ -1,0 +1,14 @@
+﻿BiteBasket food image attributions
+Generated: 2026-08-20 19:58:42
+
+Images were selected from Wikimedia Commons and normalized to 1024 x 1024.
+The original photograph is fit inside the square instead of being aggressively cropped.
+Check each source page for the full license terms.
+
+margherita-pizza.jpg
+  Source file: File:Eq it-na pizza-margherita sep2005 sml.jpg
+  Commons: https://commons.wikimedia.org/wiki/File:Eq_it-na_pizza-margherita_sep2005_sml.jpg
+  Creator: Valerio Capello at English Wikipedia
+  License: CC BY-SA 3.0
+  Search: margherita pizza
+
