@@ -660,8 +660,13 @@ namespace FoodOrderAPI.Services
                         Id = item.Id,
                         FoodItemId = item.FoodItemId,
                         FoodItemName =
-                            item.FoodItem?.Name ??
-                            string.Empty,
+    item.FoodItem?.Name ??
+    string.Empty,
+
+                        ImageUrl =
+    item.FoodItem?.ImageUrl ??
+    string.Empty,
+
                         UnitPrice = unitPrice,
                         Quantity = item.Quantity,
                         IsAvailable =

@@ -506,6 +506,14 @@
   border-radius: 15px;
 }
 
+.cart-item-image {
+  display: block;
+  width: 100%;
+  height: 116px;
+  object-fit: cover;
+  object-position: center;
+}
+
 .item-visual span {
   font-size: 3.2rem;
   filter:
@@ -952,6 +960,10 @@ a:focus-visible {
     min-height: 88px;
   }
 
+  .cart-item-image {
+  height: 88px;
+}
+
   .item-visual span {
     font-size: 2.6rem;
   }
@@ -1012,6 +1024,10 @@ a:focus-visible {
   .item-visual {
     min-height: 130px;
   }
+
+  .cart-item-image {
+  height: 130px;
+}
 
   .item-actions {
     align-items: stretch;

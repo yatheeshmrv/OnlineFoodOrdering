@@ -7,6 +7,7 @@ export interface CartItem {
   id: number;
   foodItemId: number;
   foodItemName: string;
+  imageUrl: string;
   unitPrice: number;
   quantity: number;
   isAvailable: boolean;

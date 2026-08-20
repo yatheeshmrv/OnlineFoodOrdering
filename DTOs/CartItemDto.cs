@@ -13,6 +13,9 @@
         // Name of the selected food item.
         public string FoodItemName { get; set; } = string.Empty;
 
+        // Image URL/path of the selected food item.
+        public string ImageUrl { get; set; } = string.Empty;
+
         // Current price of one unit of the food item.
         public decimal UnitPrice { get; set; }
 
