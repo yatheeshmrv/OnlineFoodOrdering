@@ -1,7 +1,4 @@
 export const environment = {
   production: true,
-
-  // Replace this with the deployed ASP.NET Core API URL
-  // when the backend is hosted.
-  apiUrl: 'https://YOUR-PRODUCTION-API-URL/api'
+  apiUrl: 'https://bitebasket-api-968351-cgb9hbabfpbjd2a7.centralindia-01.azurewebsites.net/api'
 };
