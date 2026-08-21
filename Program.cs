@@ -81,13 +81,16 @@ namespace OnlineFoodOrdering
             // Registers ApplicationDbContext and connects it
             // to SQL Server using the DefaultConnection value
             // from configuration.
-            builder.Services.AddDbContext<
-                ApplicationDbContext>(
-                    options =>
-                        options.UseSqlServer(
-                            builder.Configuration
-                                .GetConnectionString(
-                                    "DefaultConnection")));
+            builder.Services.AddDbContext<ApplicationDbContext>(
+    options =>
+        options.UseSqlServer(
+            builder.Configuration
+                .GetConnectionString("DefaultConnection"),
+            sqlOptions =>
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 6,
+                    maxRetryDelay: TimeSpan.FromSeconds(15),
+                    errorNumbersToAdd: null)));
 
             // ---------------------------------------------------------
             // REPOSITORY REGISTRATION
